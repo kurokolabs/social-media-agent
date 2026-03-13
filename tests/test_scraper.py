@@ -1,5 +1,6 @@
 """Tests for scraper module."""
 import os
+import time
 import pytest
 
 
@@ -52,3 +53,37 @@ def test_base_scraper_truncate():
     text = " ".join(["word"] * 600)
     result = scraper.truncate(text, 100)
     assert len(result.split()) == 100
+
+
+def test_robots_txt_blocking(monkeypatch):
+    """Scraper should raise ScraperBlockedError when robots.txt disallows."""
+    from scraper.base_scraper import BaseScraper, ScraperBlockedError
+    import scraper.base_scraper as base_mod
+
+    class MockRobots:
+        def set_url(self, url): pass
+        def read(self): pass
+        def can_fetch(self, agent, url): return False
+
+    base_mod._robots_cache["https://blocked.example.com/robots.txt"] = MockRobots()
+
+    class TestScraper(BaseScraper):
+        def scrape(self):
+            return []
+
+    scraper = TestScraper()
+    with pytest.raises(ScraperBlockedError):
+        scraper.fetch("https://blocked.example.com/some-page")
+
+
+def test_base_scraper_rate_limiting():
+    """Two fetches to same domain should take >= 2.5s total."""
+    # Test rate limiter directly since we can't make real HTTP calls in tests
+    from security.rate_limiter import RateLimiter
+    limiter = RateLimiter()
+    domain = "test-rate-limit-scraper.example.com"
+    start = time.time()
+    limiter.wait(domain)
+    limiter.wait(domain)
+    elapsed = time.time() - start
+    assert elapsed >= 2.5

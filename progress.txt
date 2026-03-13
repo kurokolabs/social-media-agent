@@ -13,7 +13,13 @@
 - Created .env.example with 7 required vars
 - Created pre-commit hook
 
-## ITERATION 2 - SCRAPER MODULE WITH MOCKS ⬜ TODO
+## ITERATION 2 - SCRAPER MODULE WITH MOCKS ✅ DONE
+- Implemented BaseScraper with rate limiting, robots.txt, retry, HTML extraction
+- Implemented all 6 source scrapers (McKinsey, BCG, Fraunhofer, METI, VDI, arXiv)
+- All scrapers route to MockScraper when USE_MOCK_APIS=true
+- MockScraper returns 8 realistic German articles with 100-200 word summaries
+- ScraperBlockedError for robots.txt violations
+
 ## ITERATION 3 - INTELLIGENCE MODULE ⬜ TODO
 ## ITERATION 4 - GENERATOR MODULE ⬜ TODO
 ## ITERATION 5 - PUBLISHER MODULE ⬜ TODO
