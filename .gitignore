@@ -1,0 +1,12 @@
+.idea/
+*.iml
+__pycache__/
+*.py[cod]
+.env
+.venv/
+venv/
+node_modules/
+dist/
+build/
+*.log
+.DS_Store
