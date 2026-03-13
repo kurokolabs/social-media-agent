@@ -1,26 +1,22 @@
-"""Fraunhofer scraper."""
+"""Fraunhofer press release scraper — RSS feed."""
 import os
-from scraper.base_scraper import BaseScraper
+
+from scraper.rss_scraper import RSSBaseScraper
 from scraper.mocks.mock_scraper import MockScraper
-from config import MAX_ARTICLE_WORDS
+
+RSS_URL = "https://www.fraunhofer.de/de/presse/presseinformationen.rss2.xml"
 
 
-class FraunhoferScraper(BaseScraper):
-    SOURCE = "fraunhofer"
-    BASE_URL = "https://www.fraunhofer.de/de/presse/presseinformationen.html"
+class FraunhoferScraper(RSSBaseScraper):
+    SOURCE = "Fraunhofer"
+    RSS_URL = RSS_URL
+    MAX_ITEMS = 8
 
     def scrape(self) -> list[dict]:
         if os.getenv("USE_MOCK_APIS", "true").lower() == "true":
-            return [a for a in MockScraper().scrape() if a["source"] == "Fraunhofer"]
+            return [a for a in MockScraper().scrape() if a["source"] == self.SOURCE]
         try:
-            html = self.fetch(self.BASE_URL)
-            text = self.extract_text(html)
-            summary = self.truncate(text, MAX_ARTICLE_WORDS)
-            return [{
-                "url": self.BASE_URL,
-                "title": "Fraunhofer: KI und Automatisierung",
-                "summary": summary,
-                "source": self.SOURCE,
-            }]
+            xml_text = self.fetch(self.RSS_URL)
+            return self._parse_rss(xml_text)
         except Exception:
             return []

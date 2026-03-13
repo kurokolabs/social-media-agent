@@ -1,4 +1,4 @@
-"""VDI news scraper — RSS with HTML fallback."""
+"""Reuters Technology scraper — RSS feed with HTML fallback and keyword filtering."""
 import os
 
 from bs4 import BeautifulSoup
@@ -7,20 +7,20 @@ from scraper.rss_scraper import RSSBaseScraper
 from scraper.mocks.mock_scraper import MockScraper
 from config import MAX_ARTICLE_WORDS
 
-RSS_URL = "https://www.vdi.de/nc/news-presse/presse/pressemitteilungen/?type=1557993706"
-FALLBACK_URL = "https://www.vdi.de/news"
-BASE_URL = "https://www.vdi.de"
-MAX_ITEMS = 8
+RSS_URL = "https://feeds.reuters.com/reuters/technologyNews"
+FALLBACK_URL = "https://www.reuters.com/technology/"
+BASE_URL = "https://www.reuters.com"
+MAX_ITEMS = 6
 
 FOCUS_KEYWORDS = [
-    "ki", "ai", "automatisierung", "automation", "manufacturing", "fertigung",
-    "industrie 4.0", "industry 4.0", "mittelstand", "iot", "robotik", "digital",
-    "predictive", "maschinenbau", "produktion", "operational", "ingenieur",
+    "ai", "manufacturing", "industrial", "automation", "robot",
+    "factory", "production", "supply chain", "machine learning",
+    "industry 4.0", "semiconductor", "chip",
 ]
 
 
-class VDIScraper(RSSBaseScraper):
-    SOURCE = "VDI"
+class ReutersTechScraper(RSSBaseScraper):
+    SOURCE = "Reuters"
     RSS_URL = RSS_URL
     MAX_ITEMS = MAX_ITEMS
 
@@ -28,16 +28,21 @@ class VDIScraper(RSSBaseScraper):
         lower = text.lower()
         return any(kw in lower for kw in FOCUS_KEYWORDS)
 
+    def _parse_rss_filtered(self, xml_text: str) -> list[dict]:
+        all_items = self._parse_rss(xml_text)
+        relevant = [a for a in all_items if self._is_relevant(a["title"] + " " + a["summary"])]
+        return relevant[:self.MAX_ITEMS]
+
     def _scrape_html_fallback(self) -> list[dict]:
         html = self.fetch(FALLBACK_URL)
         soup = BeautifulSoup(html, "lxml")
         articles = []
         links = []
-        for selector in [".news-item a", "article h2 a", "h3 a", "h2 a"]:
+        for selector in ["h3 a", "h2 a", "a[data-testid='Heading']", "article a"]:
             for a in soup.select(selector):
                 href = a.get("href", "")
                 title_text = a.get_text(strip=True)
-                if href and title_text:
+                if href and title_text and self._is_relevant(title_text):
                     if href.startswith("/"):
                         href = BASE_URL + href
                     if href.startswith("http"):
@@ -63,7 +68,7 @@ class VDIScraper(RSSBaseScraper):
             return [a for a in MockScraper().scrape() if a["source"] == self.SOURCE]
         try:
             xml_text = self.fetch(self.RSS_URL)
-            results = self._parse_rss(xml_text)
+            results = self._parse_rss_filtered(xml_text)
             if results:
                 return results
         except Exception:

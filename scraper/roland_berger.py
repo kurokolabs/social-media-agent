@@ -1,4 +1,4 @@
-"""BCG Insights scraper — consulting firm HTML scraper."""
+"""Roland Berger Insights scraper — consulting firm HTML scraper."""
 import os
 
 from bs4 import BeautifulSoup
@@ -8,19 +8,18 @@ from scraper.mocks.mock_scraper import MockScraper
 from config import MAX_ARTICLE_WORDS
 
 FOCUS_KEYWORDS = [
-    "ki", "ai", "automatisierung", "automation", "manufacturing", "fertigung",
-    "industrie 4.0", "industry 4.0", "mittelstand", "iot", "robotik", "digital",
-    "predictive", "maschinenbau", "produktion", "operational", "robot",
-    "japan", "deutschland", "transformation", "industrial",
+    "manufacturing", "ai", "ki", "automation", "automatisierung", "industry",
+    "industrie", "digital", "mittelstand", "robot", "iot", "produktion",
+    "operational", "maschinenbau", "transformation",
 ]
 
-LISTING_URL = "https://www.bcg.com/industries/industrial-goods/insights"
-BASE_URL = "https://www.bcg.com"
-MAX_ARTICLES = 8
+LISTING_URL = "https://www.rolandberger.com/en/Insights/"
+BASE_URL = "https://www.rolandberger.com"
+MAX_ARTICLES = 6
 
 
-class BCGScraper(BaseScraper):
-    SOURCE = "BCG"
+class RolandBergerScraper(BaseScraper):
+    SOURCE = "Roland Berger"
 
     def _is_relevant(self, text: str) -> bool:
         lower = text.lower()
@@ -29,7 +28,15 @@ class BCGScraper(BaseScraper):
     def _extract_article_urls(self, html: str) -> list[str]:
         soup = BeautifulSoup(html, "lxml")
         links = []
-        for selector in ["a.bcg-article-card", ".article-item a", "h3 a", "h2 a", ".article-title a", "a.card"]:
+        for selector in [
+            ".rb-insights-item a",
+            ".insight-card a",
+            "article a",
+            "h3 a",
+            "h2 a",
+            ".teaser-headline a",
+            ".card a",
+        ]:
             for a in soup.select(selector):
                 href = a.get("href", "")
                 title_text = a.get_text(strip=True)

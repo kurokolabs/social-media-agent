@@ -1,4 +1,4 @@
-"""VDI news scraper — RSS with HTML fallback."""
+"""Bitkom press release scraper — RSS with HTML fallback."""
 import os
 
 from bs4 import BeautifulSoup
@@ -7,20 +7,20 @@ from scraper.rss_scraper import RSSBaseScraper
 from scraper.mocks.mock_scraper import MockScraper
 from config import MAX_ARTICLE_WORDS
 
-RSS_URL = "https://www.vdi.de/nc/news-presse/presse/pressemitteilungen/?type=1557993706"
-FALLBACK_URL = "https://www.vdi.de/news"
-BASE_URL = "https://www.vdi.de"
+RSS_URL = "https://www.bitkom.org/rss.xml"
+FALLBACK_URL = "https://www.bitkom.org/Presse/Presseinformation.html"
+BASE_URL = "https://www.bitkom.org"
 MAX_ITEMS = 8
 
 FOCUS_KEYWORDS = [
     "ki", "ai", "automatisierung", "automation", "manufacturing", "fertigung",
     "industrie 4.0", "industry 4.0", "mittelstand", "iot", "robotik", "digital",
-    "predictive", "maschinenbau", "produktion", "operational", "ingenieur",
+    "predictive", "maschinenbau", "produktion", "it-branche", "digitalisierung",
 ]
 
 
-class VDIScraper(RSSBaseScraper):
-    SOURCE = "VDI"
+class BitkomScraper(RSSBaseScraper):
+    SOURCE = "Bitkom"
     RSS_URL = RSS_URL
     MAX_ITEMS = MAX_ITEMS
 
@@ -33,7 +33,7 @@ class VDIScraper(RSSBaseScraper):
         soup = BeautifulSoup(html, "lxml")
         articles = []
         links = []
-        for selector in [".news-item a", "article h2 a", "h3 a", "h2 a"]:
+        for selector in [".press-list__item a", "h3 a", "h2 a", "article a"]:
             for a in soup.select(selector):
                 href = a.get("href", "")
                 title_text = a.get_text(strip=True)

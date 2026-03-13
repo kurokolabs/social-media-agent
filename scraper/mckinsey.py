@@ -1,31 +1,106 @@
-"""McKinsey Insights scraper."""
+"""McKinsey Insights scraper — consulting firm HTML scraper."""
 import os
+
+from bs4 import BeautifulSoup
+
 from scraper.base_scraper import BaseScraper
 from scraper.mocks.mock_scraper import MockScraper
 from config import MAX_ARTICLE_WORDS
 
 FOCUS_KEYWORDS = [
-    "KI", "AI", "Automatisierung", "Manufacturing", "IoT", "Fertigung",
-    "Japan", "Deutschland", "Mittelstand", "Industry 4.0", "Predictive Maintenance",
+    "ki", "ai", "automatisierung", "automation", "manufacturing", "fertigung",
+    "industrie 4.0", "industry 4.0", "mittelstand", "iot", "robotik", "digital",
+    "predictive", "maschinenbau", "produktion", "operational", "robot",
+    "japan", "deutschland", "transformation",
 ]
+
+LISTING_URL = "https://www.mckinsey.com/industries/industrials-and-electronics/our-insights"
+BASE_URL = "https://www.mckinsey.com"
+MAX_ARTICLES = 8
 
 
 class McKinseyScraper(BaseScraper):
-    SOURCE = "mckinsey"
-    BASE_URL = "https://www.mckinsey.com/industries/industrials-and-electronics/our-insights"
+    SOURCE = "McKinsey"
+
+    def _is_relevant(self, text: str) -> bool:
+        lower = text.lower()
+        return any(kw in lower for kw in FOCUS_KEYWORDS)
+
+    def _extract_article_urls(self, html: str) -> list[str]:
+        soup = BeautifulSoup(html, "lxml")
+        links = []
+        selectors = [
+            "a[data-layer-region='article-list'] h3",
+            "a.mck-c-article-block",
+            "article h3 a",
+            "h3 a",
+            "h2 a",
+            ".article-title a",
+        ]
+        # Selector strategies that return <a> tags directly
+        a_selectors = ["a.mck-c-article-block", "article h3 a", "h3 a", "h2 a", ".article-title a"]
+        for selector in a_selectors:
+            for a in soup.select(selector):
+                href = a.get("href", "")
+                title_text = a.get_text(strip=True)
+                if href and self._is_relevant(title_text):
+                    if href.startswith("/"):
+                        href = BASE_URL + href
+                    if href.startswith("http"):
+                        links.append(href)
+        # Try heading-inside-anchor pattern
+        for a in soup.select("a[data-layer-region='article-list']"):
+            href = a.get("href", "")
+            h = a.find(["h3", "h2", "h1"])
+            title_text = h.get_text(strip=True) if h else a.get_text(strip=True)
+            if href and self._is_relevant(title_text):
+                if href.startswith("/"):
+                    href = BASE_URL + href
+                if href.startswith("http"):
+                    links.append(href)
+        return list(dict.fromkeys(links))[:MAX_ARTICLES]
+
+    def _fetch_article(self, url: str) -> dict:
+        html = self.fetch(url)
+        soup = BeautifulSoup(html, "lxml")
+        title = ""
+        for sel in ["h1", "meta[property='og:title']", "title"]:
+            el = soup.select_one(sel)
+            if el:
+                title = el.get("content", "") or el.get_text(strip=True)
+                if title:
+                    break
+        summary = ""
+        meta = soup.select_one("meta[name='description']") or soup.select_one(
+            "meta[property='og:description']"
+        )
+        if meta:
+            summary = meta.get("content", "")
+        if not summary:
+            for p in soup.select("article p, .content p, main p"):
+                text = p.get_text(strip=True)
+                if len(text.split()) > 20:
+                    summary = text
+                    break
+        return {
+            "url": url,
+            "title": title or url,
+            "summary": self.truncate(summary, MAX_ARTICLE_WORDS),
+            "source": self.SOURCE,
+        }
 
     def scrape(self) -> list[dict]:
         if os.getenv("USE_MOCK_APIS", "true").lower() == "true":
-            return [a for a in MockScraper().scrape() if a["source"] == "McKinsey"]
+            return [a for a in MockScraper().scrape() if a["source"] == self.SOURCE]
         try:
-            html = self.fetch(self.BASE_URL)
-            text = self.extract_text(html)
-            summary = self.truncate(text, MAX_ARTICLE_WORDS)
-            return [{
-                "url": self.BASE_URL,
-                "title": "McKinsey: Industrial AI Insights",
-                "summary": summary,
-                "source": self.SOURCE,
-            }]
+            html = self.fetch(LISTING_URL)
+            urls = self._extract_article_urls(html)
+            articles = []
+            for url in urls:
+                try:
+                    articles.append(self._fetch_article(url))
+                except Exception:
+                    continue
+            return articles
         except Exception:
             return []

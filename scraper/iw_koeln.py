@@ -1,4 +1,4 @@
-"""BCG Insights scraper — consulting firm HTML scraper."""
+"""IW Köln press release scraper — HTML."""
 import os
 
 from bs4 import BeautifulSoup
@@ -7,20 +7,20 @@ from scraper.base_scraper import BaseScraper
 from scraper.mocks.mock_scraper import MockScraper
 from config import MAX_ARTICLE_WORDS
 
+LISTING_URL = "https://www.iwkoeln.de/presse/pressemitteilungen.html"
+BASE_URL = "https://www.iwkoeln.de"
+MAX_ARTICLES = 6
+
 FOCUS_KEYWORDS = [
     "ki", "ai", "automatisierung", "automation", "manufacturing", "fertigung",
     "industrie 4.0", "industry 4.0", "mittelstand", "iot", "robotik", "digital",
-    "predictive", "maschinenbau", "produktion", "operational", "robot",
-    "japan", "deutschland", "transformation", "industrial",
+    "predictive", "maschinenbau", "produktion", "wettbewerb", "konjunktur",
+    "arbeitsmarkt", "wirtschaft",
 ]
 
-LISTING_URL = "https://www.bcg.com/industries/industrial-goods/insights"
-BASE_URL = "https://www.bcg.com"
-MAX_ARTICLES = 8
 
-
-class BCGScraper(BaseScraper):
-    SOURCE = "BCG"
+class IWKoelnScraper(BaseScraper):
+    SOURCE = "IW Köln"
 
     def _is_relevant(self, text: str) -> bool:
         lower = text.lower()
@@ -29,11 +29,18 @@ class BCGScraper(BaseScraper):
     def _extract_article_urls(self, html: str) -> list[str]:
         soup = BeautifulSoup(html, "lxml")
         links = []
-        for selector in ["a.bcg-article-card", ".article-item a", "h3 a", "h2 a", ".article-title a", "a.card"]:
+        for selector in [
+            ".press-item a",
+            "h3 a",
+            "h2 a",
+            "article a",
+            ".press-list a",
+            ".news-item a",
+        ]:
             for a in soup.select(selector):
                 href = a.get("href", "")
                 title_text = a.get_text(strip=True)
-                if href and self._is_relevant(title_text):
+                if href:
                     if href.startswith("/"):
                         href = BASE_URL + href
                     if href.startswith("http"):

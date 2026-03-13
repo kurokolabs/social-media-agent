@@ -1,4 +1,4 @@
-"""BCG Insights scraper — consulting firm HTML scraper."""
+"""Plattform Industrie 4.0 news scraper — HTML."""
 import os
 
 from bs4 import BeautifulSoup
@@ -7,20 +7,21 @@ from scraper.base_scraper import BaseScraper
 from scraper.mocks.mock_scraper import MockScraper
 from config import MAX_ARTICLE_WORDS
 
+LISTING_URL = (
+    "https://www.plattform-i40.de/IP/Navigation/EN/Industrie40/News/news.html"
+)
+BASE_URL = "https://www.plattform-i40.de"
+MAX_ARTICLES = 6
+
 FOCUS_KEYWORDS = [
     "ki", "ai", "automatisierung", "automation", "manufacturing", "fertigung",
     "industrie 4.0", "industry 4.0", "mittelstand", "iot", "robotik", "digital",
-    "predictive", "maschinenbau", "produktion", "operational", "robot",
-    "japan", "deutschland", "transformation", "industrial",
+    "predictive", "maschinenbau", "produktion", "standard", "platform",
 ]
 
-LISTING_URL = "https://www.bcg.com/industries/industrial-goods/insights"
-BASE_URL = "https://www.bcg.com"
-MAX_ARTICLES = 8
 
-
-class BCGScraper(BaseScraper):
-    SOURCE = "BCG"
+class PlattformI40Scraper(BaseScraper):
+    SOURCE = "Plattform I4.0"
 
     def _is_relevant(self, text: str) -> bool:
         lower = text.lower()
@@ -29,16 +30,29 @@ class BCGScraper(BaseScraper):
     def _extract_article_urls(self, html: str) -> list[str]:
         soup = BeautifulSoup(html, "lxml")
         links = []
-        for selector in ["a.bcg-article-card", ".article-item a", "h3 a", "h2 a", ".article-title a", "a.card"]:
+        for selector in [
+            ".news-item a",
+            "h3 a",
+            ".teaser-headline a",
+            "h2 a",
+            "article a",
+            ".content-item a",
+        ]:
             for a in soup.select(selector):
                 href = a.get("href", "")
                 title_text = a.get_text(strip=True)
-                if href and self._is_relevant(title_text):
+                if href:
                     if href.startswith("/"):
                         href = BASE_URL + href
                     if href.startswith("http"):
-                        links.append(href)
-        return list(dict.fromkeys(links))[:MAX_ARTICLES]
+                        links.append((href, title_text))
+        seen = set()
+        result = []
+        for href, _ in links:
+            if href not in seen:
+                seen.add(href)
+                result.append(href)
+        return result[:MAX_ARTICLES]
 
     def _fetch_article(self, url: str) -> dict:
         html = self.fetch(url)

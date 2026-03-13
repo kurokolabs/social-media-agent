@@ -34,13 +34,31 @@ def run_full_pipeline() -> dict:
     else:
         from scraper.mckinsey import McKinseyScraper
         from scraper.bcg import BCGScraper
+        from scraper.roland_berger import RolandBergerScraper
+        from scraper.deloitte import DeloitteScraper
         from scraper.fraunhofer import FraunhoferScraper
-        from scraper.meti import METIScraper
         from scraper.vdi import VDIScraper
+        from scraper.bitkom import BitkomScraper
+        from scraper.plattform_i40 import PlattformI40Scraper
+        from scraper.iw_koeln import IWKoelnScraper
+        from scraper.mit_tech_review import MITTechReviewScraper
+        from scraper.reuters_tech import ReutersTechScraper
+        from scraper.meti import METIScraper
         from scraper.arxiv import ArXivScraper
         sources = [
-            McKinseyScraper(), BCGScraper(), FraunhoferScraper(),
-            METIScraper(), VDIScraper(), ArXivScraper(),
+            McKinseyScraper(),
+            BCGScraper(),
+            RolandBergerScraper(),
+            DeloitteScraper(),
+            FraunhoferScraper(),
+            VDIScraper(),
+            BitkomScraper(),
+            PlattformI40Scraper(),
+            IWKoelnScraper(),
+            MITTechReviewScraper(),
+            ReutersTechScraper(),
+            METIScraper(),
+            ArXivScraper(),
         ]
         articles = []
         for s in sources:

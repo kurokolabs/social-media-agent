@@ -1,4 +1,4 @@
-"""BCG Insights scraper — consulting firm HTML scraper."""
+"""Deloitte Technology Insights scraper — consulting firm HTML scraper."""
 import os
 
 from bs4 import BeautifulSoup
@@ -11,16 +11,18 @@ FOCUS_KEYWORDS = [
     "ki", "ai", "automatisierung", "automation", "manufacturing", "fertigung",
     "industrie 4.0", "industry 4.0", "mittelstand", "iot", "robotik", "digital",
     "predictive", "maschinenbau", "produktion", "operational", "robot",
-    "japan", "deutschland", "transformation", "industrial",
+    "transformation", "technology", "technologie",
 ]
 
-LISTING_URL = "https://www.bcg.com/industries/industrial-goods/insights"
-BASE_URL = "https://www.bcg.com"
-MAX_ARTICLES = 8
+LISTING_URL = (
+    "https://www2.deloitte.com/de/de/pages/technology/articles/technology-insights.html"
+)
+BASE_URL = "https://www2.deloitte.com"
+MAX_ARTICLES = 6
 
 
-class BCGScraper(BaseScraper):
-    SOURCE = "BCG"
+class DeloitteScraper(BaseScraper):
+    SOURCE = "Deloitte"
 
     def _is_relevant(self, text: str) -> bool:
         lower = text.lower()
@@ -29,7 +31,16 @@ class BCGScraper(BaseScraper):
     def _extract_article_urls(self, html: str) -> list[str]:
         soup = BeautifulSoup(html, "lxml")
         links = []
-        for selector in ["a.bcg-article-card", ".article-item a", "h3 a", "h2 a", ".article-title a", "a.card"]:
+        for selector in [
+            ".article-list-item a",
+            ".content-card a",
+            "h3 a",
+            "h2 a",
+            "article a",
+            ".teaser a",
+            ".card a",
+            ".insight a",
+        ]:
             for a in soup.select(selector):
                 href = a.get("href", "")
                 title_text = a.get_text(strip=True)
