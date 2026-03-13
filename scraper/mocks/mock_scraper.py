@@ -82,7 +82,7 @@ class MockScraper:
                     "skalieren, zeigen dreifach höhere Erfolgsquoten als solche, die flächendeckend "
                     "starten. Edge-Computing ermöglicht dabei Reaktionszeiten unter 100ms ohne Cloud-Abhängigkeit."
                 ),
-                "source": "IoT Analytics",
+                "source": "arXiv",
                 "relevance_score": 8.1,
             },
             {

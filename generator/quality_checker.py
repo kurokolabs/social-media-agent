@@ -27,9 +27,16 @@ class QualityChecker:
 
     def evaluate(self, post_content: str) -> dict:
         """Return score dict with score/reason/passed."""
+        # Fast pre-check: immediately penalize forbidden phrases before calling LLM
+        lower = post_content.lower()
+        has_forbidden = any(phrase in lower for phrase in self.FORBIDDEN_PHRASES)
+
         client = self._get_client()
         result = client.evaluate_post(post_content)
         score = result.get("score", 5)
+        if has_forbidden:
+            score = max(0, score - 2)
+
         return {
             "score": score,
             "reason": result.get("reason", ""),

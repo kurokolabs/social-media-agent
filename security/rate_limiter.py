@@ -15,9 +15,11 @@ class RateLimiter:
         """Block until it is safe to make a request to the given domain."""
         with self._lock:
             last = self._last_request.get(domain, 0.0)
-            now = time.time()
-            elapsed = now - last
             delay = random.uniform(2.5, 5.0)
-            if elapsed < delay:
-                time.sleep(delay - elapsed)
-            self._last_request[domain] = time.time()
+            sleep_for = delay - (time.time() - last)
+            # Reserve the slot before releasing the lock so no other thread steals it
+            self._last_request[domain] = time.time() + max(sleep_for, 0)
+
+        # Sleep OUTSIDE the lock — other domains must not be blocked during our wait
+        if sleep_for > 0:
+            time.sleep(sleep_for)

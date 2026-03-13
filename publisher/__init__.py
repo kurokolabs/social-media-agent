@@ -12,10 +12,11 @@ def get_next_slot() -> datetime:
     target_hours = [8, 12]
 
     candidate = now.replace(second=0, microsecond=0)
-    for _ in range(14):
+    # Search up to 14 days × 24 hours to guarantee finding a Tue/Thu slot
+    for _ in range(14 * 24):
         candidate += timedelta(hours=1)
         if candidate.weekday() in target_days and candidate.hour in target_hours:
             return candidate.astimezone(timezone.utc)
 
-    # Fallback: 1 day from now
-    return (now + timedelta(days=1)).astimezone(timezone.utc)
+    # Should be unreachable, but satisfy the type checker
+    return (now + timedelta(days=2)).astimezone(timezone.utc)

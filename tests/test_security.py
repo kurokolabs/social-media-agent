@@ -63,11 +63,23 @@ def test_rate_limiter_enforces_delay():
 
 
 def test_no_hardcoded_secrets():
-    """No Python files should contain hardcoded API key patterns."""
+    """No production Python files should contain hardcoded API key patterns."""
     import subprocess
-    result = subprocess.run(
-        ["grep", "-r", "sk-ant\\|AIzaSy", "--include=*.py", "."],
-        capture_output=True,
-        text=True,
-    )
-    assert result.stdout.strip() == "", f"Hardcoded secrets found:\n{result.stdout}"
+    # Scan only production source dirs — exclude tests (contains the pattern as a string literal)
+    # and .venv (third-party code).
+    dirs = ["security", "scraper", "intelligence", "generator", "publisher", "storage", "scheduler", "main.py", "config.py"]
+    for target in dirs:
+        result = subprocess.run(
+            ["grep", "-rn", "sk-ant", "--include=*.py", target],
+            capture_output=True,
+            text=True,
+            cwd=".",
+        )
+        assert result.stdout.strip() == "", f"Hardcoded sk-ant secret in {target}:\n{result.stdout}"
+        result2 = subprocess.run(
+            ["grep", "-rn", "AIzaSy", "--include=*.py", target],
+            capture_output=True,
+            text=True,
+            cwd=".",
+        )
+        assert result2.stdout.strip() == "", f"Hardcoded AIzaSy secret in {target}:\n{result2.stdout}"

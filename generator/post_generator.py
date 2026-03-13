@@ -1,6 +1,5 @@
 """Post generator — orchestrates Claude/mock to create LinkedIn posts."""
 import os
-from typing import Optional
 
 from generator.quality_checker import QualityChecker
 from security.audit_log import audit_log
@@ -53,9 +52,6 @@ class PostGenerator:
                     "quality_score": quality["score"],
                     "article_id": article.get("id"),
                 }
-
-            if attempt < MAX_GENERATION_RETRIES:
-                continue
 
         # Below threshold after retries — send to review queue
         self.quality_checker.save_to_review_queue({

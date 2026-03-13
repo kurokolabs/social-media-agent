@@ -1,6 +1,7 @@
 """Base scraper with rate limiting, robots.txt, retry, and HTML extraction."""
 import random
 import re
+import threading
 import time
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
@@ -19,6 +20,7 @@ USER_AGENTS = [
 
 _rate_limiter = RateLimiter()
 _robots_cache: dict[str, RobotFileParser] = {}
+_robots_lock = threading.Lock()
 
 
 class ScraperBlockedError(Exception):
@@ -37,16 +39,19 @@ class BaseScraper:
         """Raise ScraperBlockedError if robots.txt disallows this URL."""
         parsed = urlparse(url)
         robots_url = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
-        if robots_url not in _robots_cache:
-            rp = RobotFileParser()
-            rp.set_url(robots_url)
-            try:
-                rp.read()
-            except Exception:
-                _robots_cache[robots_url] = None
-                return
-            _robots_cache[robots_url] = rp
-        rp = _robots_cache[robots_url]
+
+        with _robots_lock:
+            if robots_url not in _robots_cache:
+                rp = RobotFileParser()
+                rp.set_url(robots_url)
+                try:
+                    rp.read()
+                except Exception:
+                    _robots_cache[robots_url] = None
+                    return
+                _robots_cache[robots_url] = rp
+            rp = _robots_cache[robots_url]
+
         if rp and not rp.can_fetch("*", url):
             raise ScraperBlockedError(f"robots.txt blocks: {url}")
 

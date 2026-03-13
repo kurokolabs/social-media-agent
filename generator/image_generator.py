@@ -35,11 +35,24 @@ class ImageGenerator:
         except Exception:
             return False
 
+    def _get_prompt(self, post_content: str) -> str:
+        """Generate an image prompt via Claude or mock."""
+        if os.getenv("USE_MOCK_APIS", "true").lower() == "true":
+            from generator.mocks.mock_claude import MockClaudeClient
+            return MockClaudeClient().generate_image_prompt(post_content)
+        import anthropic
+        client = anthropic.Anthropic()
+        msg = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=200,
+            messages=[{"role": "user", "content": f"Generate a Midjourney image prompt for this LinkedIn post. Reply with the prompt only.\n\n{post_content}"}],
+        )
+        return msg.content[0].text.strip()
+
     def generate(self, post_content: str) -> Optional[str]:
         """Generate image for post. Returns file path or None on failure."""
         try:
-            from generator.mocks.mock_claude import MockClaudeClient
-            prompt = MockClaudeClient().generate_image_prompt(post_content)
+            prompt = self._get_prompt(post_content)
 
             client = self._get_client()
             result = client.generate_image(prompt)
