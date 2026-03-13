@@ -1,82 +1,65 @@
 """Mock Claude client — returns realistic German posts without API calls."""
-from typing import Optional
 
 MOCK_POSTS = {
-    "trend": """Letzte Woche war ich bei einem Automobilzulieferer in der Nähe von Augsburg. 250 Mitarbeiter, dritte Generation Familienunternehmen, hervorragende Qualität — aber die Maschinen sprechen noch nicht miteinander.
+    "trend": """Eine Beobachtung, die uns bei Kuroko Labs in letzter Zeit häufiger begegnet: Fertigungsbetriebe haben die Diskussion über KI-Einführung längst hinter sich gelassen. Die Frage ist nicht mehr ob, sondern wie — und vor allem wie schnell.
 
-Der Geschäftsführer zeigte mir einen Ordner mit handgeschriebenen Wartungsprotokollen. Seit 1987. Jede Seite voll mit Mustern, die kein Mensch in vertretbarer Zeit analysieren kann.
+Was wir dabei wahrnehmen: Der Druck kommt seltener von der Geschäftsführung als von den Operations-Teams selbst. Schichtleiter und Produktionsleiter, die konkrete Probleme haben und konkrete Lösungen suchen. Keine Strategie-Workshops. Keine Digitaliserungsoffensiven. Sondern: Diese eine Maschine fällt uns zu oft aus. Können wir das vorhersagen?
 
-Wir haben in vier Stunden einen einfachen KI-Agenten aufgesetzt, der diese Daten digitalisiert und visualisiert. Das Ergebnis: Drei Maschinen zeigen ein Vibrationsmuster, das in 78% der historischen Fälle sechs Wochen vor einem Ausfall auftritt.
+Das ist eigentlich eine gute Ausgangslage. Projekte mit einem klar definierten Ausgangsproblem haben eine deutlich höhere Umsetzungsrate als solche, die aus einer vagen „wir müssen jetzt KI machen"-Logik entstehen.
 
-Kein Big-Bang. Kein ERP-Austausch. Nur ein gezielter Einstieg an einem konkreten Problem.
+Was wir als Hindernis erleben: Die Daten sind oft da. Sensoren laufen. Maschinenprotokolle existieren. Aber sie liegen in Systemen, die nicht miteinander sprechen, und werden von niemandem systematisch ausgewertet.
 
-Ich glaube, das ist der richtige Weg für den Mittelstand. Nicht die universelle KI-Plattform für alles auf einmal, sondern ein Werkzeug, das ein spezifisches Problem löst und dabei vertraut wird.
+Das ist kein Technologieproblem. Es ist meistens ein Prioritätenproblem — und manchmal ein Ressourcenproblem.
 
-Die nächste Frage des Geschäftsführers: "Können wir das auf alle 47 Anlagen ausrollen?" — Können wir. Aber langsam und richtig.
+#KIAgenten #Fertigung #Mittelstand #Automatisierung""",
 
-#KIAgenten #Mittelstand #PredictiveMaintenance #Fertigung""",
+    "japan_germany": """BCG hat kürzlich einen Vergleich zwischen japanischen und deutschen Fertigungsunternehmen bei der KI-Einführung veröffentlicht. Das Ergebnis ist weniger überraschend als die Begründung dahinter.
 
-    "japan_germany": """Vor zwei Jahren war ich das erste Mal in einer Fabrik in Nagoya. Was mich am meisten beeindruckt hat: Die Stille.
+Beide Länder erzielen ähnliche Produktivitätssteigerungen — der Unterschied liegt im Weg dorthin. Japanische Unternehmen tendieren zu kleinschrittiger, mitarbeitergetriebener Integration. Deutsche Unternehmen zu größeren Transformationsprojekten mit klaren Businesscases vorab.
 
-Nicht weil wenig los war — im Gegenteil. Sondern weil jeder genau wusste was zu tun war. Kaizen nicht als Methode, sondern als Haltung. Kontinuierliche Verbesserung als tägliche Praxis, nicht als Jahresprojekt.
+Was uns bei Kuroko Labs auffällt: Die Projekte die bei deutschen Mittelständlern am besten laufen, ähneln strukturell eher dem japanischen Ansatz — obwohl das niemand so nennt. Ein abgegrenztes Problem, ein kleines Team, ein messbares Ziel. Dann Erweiterung.
 
-In deutschen Fabriken erlebe ich oft das Gegenteil: Große Transformationsprojekte, klare Businesscases, starke Ingenieurskultur — aber manchmal fehlt die Geduld für das Inkrementelle.
+Die Kaizen-Logik — kontinuierliche Verbesserung statt Einmalumstellung — ist eigentlich keine japanische Besonderheit. Sie ist einfach pragmatisch.
 
-Was mich bei KI-Projekten am meisten überrascht: Die erfolgreichsten Implementierungen in Deutschland ähneln dem japanischen Ansatz mehr als dem Silicon-Valley-Ansatz. Klein anfangen. Messen. Anpassen. Wiederholen.
+Was dabei verloren geht: Viele Mittelständler warten auf den richtigen Moment für das große Projekt. Der kommt selten. Der Einstieg mit einem kleinen, gut definierten Problem ist kein Kompromiss — er ist oft der direktere Weg.
 
-Ein Fertigungsunternehmen aus Bayern, mit dem wir arbeiten, hat genau das gemacht: Ein KI-Agent für die Qualitätskontrolle einer einzigen Produktlinie. 14 Monate später läuft er auf 23 Linien.
+#JapanDeutschland #Fertigung #KIAgenten #Industrie40""",
 
-Monozukuri — die Kunst des Machens — und deutscher Maschinenbau teilen mehr als man denkt.
+    "manufacturing_iot": """Laut einer aktuellen IoT-Analytics-Auswertung laufen in einem Großteil der analysierten Fertigungsanlagen bereits Sensoren — Temperatur, Vibration, Stromaufnahme. Die Daten werden gesammelt. Sie werden nur selten systematisch ausgewertet.
 
-#JapanDeutschland #Fertigung #KIAgenten #Mittelstand""",
+Das ist ein Befund, den wir bei Kuroko Labs aus Gesprächen mit Produktionsbetrieben kennen. Nicht weil die Unternehmen das nicht wollen, sondern weil der Schritt von „Daten vorhanden" zu „Daten nutzbar" unterschätzt wird. Verschiedene Systeme, verschiedene Formate, kein einheitliches Bild.
 
-    "manufacturing_iot": """Eine Zahl, die mich letzte Woche nicht losgelassen hat: 73%.
+Predictive Maintenance ist als Konzept längst angekommen. Die Lücke liegt zwischen dem Konzept und der tatsächlichen Umsetzung auf Basis vorhandener Infrastruktur.
 
-So viel Prozent der ungeplanten Maschinenstillstände in der Fertigung wären mit vorhandenen Sensordaten vorhersehbar — wenn diese Daten systematisch ausgewertet würden.
+Was wir dabei beobachten: Unternehmen, die mit einer einzigen Anlage oder einer einzigen Maschinenklasse starten, kommen deutlich weiter als die, die direkt flächendeckend einführen wollen. Nicht weil die Technologie das erfordern würde — sondern weil die Organisation es tut.
 
-Die meisten Maschinen in deutschen Fertigungsbetrieben senden bereits Daten: Temperatur, Vibration, Stromaufnahme. Sie liegen in irgendwelchen Systemen. Ungenutzt.
+Der technische Teil ist lösbar. Die Frage ist meistens: Wer im Unternehmen nimmt das in die Hand?
 
-Das ist kein Technologieproblem. Es ist ein Integrations- und Interpretationsproblem.
+#IoT #PredictiveMaintenance #Industrie40 #Fertigung""",
 
-Wir arbeiten gerade mit einem mittelständischen Maschinenbauer zusammen, der genau das löst. Keine neue Hardware. Keine neue Sensorik. Nur ein KI-Agent, der bestehende Datenströme interpretiert und Wartungsteams 48 Stunden vorher informiert.
+    "thought_leadership": """Eine Frage, die uns bei Kuroko Labs regelmäßig in Gesprächen mit Fertigungsbetrieben begegnet: "Wir wollen KI einführen — aber wir wissen nicht, womit wir anfangen sollen."
 
-Nach drei Monaten: Stillstandzeiten um 34% reduziert. Wartungskosten um 28% gesunken. Das Team schläft besser.
+Das klingt nach einem Technologieproblem. Es ist keins.
 
-IoT ist nicht das Ziel. Weniger unerwartete Ausfälle ist das Ziel.
+Meistens fehlt nicht das Wissen über verfügbare Tools. Es fehlt die Einigkeit darüber, welches Problem zuerst gelöst werden soll. KI-Projekte die ohne diese Einigkeit starten, enden häufig in Piloten, die niemand weiterführt — nicht weil das System schlecht war, sondern weil kein klarer Eigentümer definiert war.
 
-#IoT #PredictiveMaintenance #Industrie40 #KIAgenten""",
+Was wir aus unserer Praxis mitnehmen: Der erste und wichtigste Schritt ist nicht die Technologieauswahl. Es ist die Frage: Was kostet uns am meisten — in Zeit, in Fehlern, in manueller Arbeit? Und wer im Unternehmen hat das Problem täglich auf dem Tisch?
 
-    "thought_leadership": """Ich werde oft gefragt: "Werden KI-Agenten Arbeitsplätze in der Fertigung ersetzen?"
+Wenn diese Frage beantwortet ist, wird die Technologieentscheidung fast zweitrangig. Dann gibt es selten zehn Optionen, sondern zwei oder drei.
 
-Meine ehrliche Antwort: Manche Jobs werden sich fundamental verändern. Aber ich glaube nicht, dass das die entscheidende Frage ist.
+#KIAgenten #Mittelstand #Prozessoptimierung #Fertigung""",
 
-Die entscheidende Frage ist: Wer entscheidet wie diese Veränderung passiert?
+    "behind_scenes": """Was uns bei der Arbeit an KI-Projekten für Fertigungsbetriebe immer wieder auffällt: Die technische Umsetzung ist selten der schwierigste Teil.
 
-In den Unternehmen, bei denen ich sehe dass KI-Einführungen gut laufen, sind die Mitarbeiter am Shopfloor von Anfang an dabei. Nicht als Betroffene, sondern als Experten. Weil sie das Prozesswissen haben, das kein Datensatz der Welt hat.
+Was häufiger zum Problem wird: Das System läuft, aber der Alltag ändert sich nicht. Warnmeldungen werden erzeugt und ignoriert. Dashboards existieren und werden nicht geöffnet. Nicht aus Desinteresse, sondern weil niemand im Tagesablauf explizit Zeit dafür vorgesehen hat.
 
-Der erfahrene Maschinenbediener, der nach 20 Jahren am Ton der Maschine hört wenn etwas nicht stimmt — dieses Wissen ist Gold. Ein KI-Agent kann es skalierbar machen. Aber er kann es nicht ersetzen.
+Das ist keine Kritik an den Betrieben — es ist ein Planungsproblem, das wir als Dienstleister mitverantworten. Ein KI-System das Daten auswertet ist kein fertiges Produkt. Es ist der Ausgangspunkt für eine veränderte Arbeitsweise.
 
-Meine Überzeugung: Die besten KI-Projekte in der Fertigung entstehen wenn Technologen zuhören bevor sie bauen.
+Bei Kuroko Labs haben wir gelernt, dieses Gespräch früher zu führen: Wer schaut täglich auf welche Information? Was ändert sich in der Entscheidung wenn das System einen Alarm ausgibt? Wer ist zuständig?
 
-Was ich mir für den Mittelstand wünsche: Mehr Projekte die mit "Was nervt euch am meisten?" anfangen — nicht mit "Hier ist unsere KI-Lösung."
+Diese Fragen klingen unspektakulär. Sie entscheiden darüber ob ein Projekt im Betrieb ankommt oder im Reporting bleibt.
 
-#KI #Fertigung #Mittelstand #Zukunft""",
-
-    "behind_scenes": """Ehrlicher Moment: Unser erstes großes KI-Projekt für einen Kunden ist vor anderthalb Jahren gescheitert.
-
-Nicht technisch. Alles hat funktioniert. Der Pilot war ein Erfolg. Die Zahlen stimmten.
-
-Es scheiterte weil wir den mittleren Kader nicht eingebunden hatten. Die Schichtleiter wurden informiert, nicht beteiligt. Und als das System live ging, haben sie es — verständlicherweise — nicht aktiv unterstützt.
-
-Sechs Monate Arbeit. Rollback nach zwei Wochen Produktion.
-
-Was wir seitdem immer machen: Das Change-Programm läuft parallel zum technischen Projekt. Nicht danach.
-
-Ich erzähle das weil ich öfter von ähnlichen Erfahrungen in anderen Unternehmen höre. Und weil ich glaube, dass Scheitern in diesem Bereich nichts ist, worüber man nicht offen sprechen sollte.
-
-KI im Mittelstand wird nicht an der Technologie scheitern. Es scheitert an Change-Management und an zu wenig Ehrlichkeit über die eigentlichen Hindernisse.
-
-#KIAgenten #Mittelstand #Erfahrungen #KurokoLabs""",
+#KurokoLabs #KIAgenten #Fertigung #Mittelstand""",
 }
 
 
@@ -94,7 +77,7 @@ class MockClaudeClient:
         }
 
     def evaluate_post(self, post: str) -> dict:
-        return {"score": 8, "reason": "Mock: post sounds authentic and concrete"}
+        return {"score": 8, "reason": "Mock: observation-based company voice, no invented results"}
 
     def generate_image_prompt(self, post: str) -> str:
         return (
