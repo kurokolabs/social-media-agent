@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Kuroko Labs — Social Agent{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="/static/css/kuroko.css" />
+  {% block head_extra %}{% endblock %}
+  <script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js" defer></script>
+
+  <script>
+    // CSRF: inject X-CSRF-Token on every HTMX request
+    // The token lives in the csrf_token cookie (httponly=false)
+    function getCsrfToken() {
+      const m = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/);
+      return m ? decodeURIComponent(m[1]) : '';
+    }
+    document.addEventListener('htmx:configRequest', function(evt) {
+      evt.detail.headers['X-CSRF-Token'] = getCsrfToken();
+    });
+    // If the server returns 401 (session expired), redirect to login
+    document.addEventListener('htmx:responseError', function(evt) {
+      if (evt.detail.xhr.status === 401) {
+        window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
+      }
+    });
+  </script>
+</head>
+
+{# hx-headers is not needed because we use htmx:configRequest above #}
+<body>
+  <header>
+    <a class="logo" href="/">
+      <span class="logo-kanji">黒衣</span>
+      <span>KUROKO LABS</span>
+    </a>
+    <nav>
+      <a href="/" {% if active == 'calendar' %}class="active"{% endif %}>Kalender</a>
+      <a href="/posts" {% if active == 'posts' %}class="active"{% endif %}>Posts</a>
+      <a href="/alerts" {% if active == 'alerts' %}class="active"{% endif %}>
+        Alerts
+        <span hx-get="/alerts/count"
+              hx-trigger="load, every 60s"
+              hx-swap="innerHTML"></span>
+      </a>
+      <a href="/settings" {% if active == 'settings' %}class="active"{% endif %}>Ops</a>
+    </nav>
+
+    <!-- Logout — placed at far right, uses hx-post for CSRF injection -->
+    <form action="/logout" method="POST"
+          style="margin-left:1.5rem;"
+          onsubmit="this.querySelector('input[name=csrf_token]').value = getCsrfToken();">
+      <input type="hidden" name="csrf_token" value="" />
+      <button type="submit"
+              style="background:none;border:1px solid #444;color:#888;
+                     padding:.25rem .65rem;font-size:.65rem;font-weight:700;
+                     text-transform:uppercase;letter-spacing:.1em;cursor:pointer;
+                     transition:color .15s,border-color .15s;"
+              onmouseover="this.style.color='#fff';this.style.borderColor='#fff';"
+              onmouseout="this.style.color='#888';this.style.borderColor='#444';">
+        Logout
+      </button>
+    </form>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

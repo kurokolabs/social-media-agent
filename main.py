@@ -45,7 +45,20 @@ def run_full_pipeline() -> dict:
         from scraper.reuters_tech import ReutersTechScraper
         from scraper.meti import METIScraper
         from scraper.arxiv import ArXivScraper
+        # New: LLM research + AI-news scrapers
+        from scraper.arxiv_llm import ArXivLLMScraper
+        from scraper.papers_with_code import PapersWithCodeScraper
+        from scraper.deepmind_blog import DeepMindBlogScraper
+        from scraper.huggingface_blog import HuggingFaceBlogScraper
+        from scraper.anthropic_research import AnthropicResearchScraper
+        from scraper.acl_anthology import ACLAnthologyScraper
+        from scraper.semantic_scholar import SemanticScholarScraper
+        from scraper.google_ai_blog import GoogleAIBlogScraper
+        from scraper.techcrunch_ai import TechCrunchAIScraper
+        from scraper.venturebeat_ai import VentureBeatAIScraper
+        from scraper.openai_blog import OpenAIBlogScraper
         sources = [
+            # Consulting + industry (LinkedIn-focused)
             McKinseyScraper(),
             BCGScraper(),
             RolandBergerScraper(),
@@ -59,6 +72,20 @@ def run_full_pipeline() -> dict:
             ReutersTechScraper(),
             METIScraper(),
             ArXivScraper(),
+            # LLM + AI research (LinkedIn + X + Instagram)
+            ArXivLLMScraper(),
+            PapersWithCodeScraper(),
+            SemanticScholarScraper(),
+            ACLAnthologyScraper(),
+            # AI lab blogs (X + Instagram)
+            AnthropicResearchScraper(),
+            DeepMindBlogScraper(),
+            GoogleAIBlogScraper(),
+            HuggingFaceBlogScraper(),
+            OpenAIBlogScraper(),
+            # AI news (X + Instagram)
+            TechCrunchAIScraper(),
+            VentureBeatAIScraper(),
         ]
         articles = []
         for s in sources:

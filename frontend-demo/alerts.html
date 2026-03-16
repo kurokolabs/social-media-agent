@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alerts — Kuroko Labs Social Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <style>
+    .alerts-main {
+      grid-column: 2;
+      overflow-y: auto;
+      height: 100%;
+    }
+
+    .alerts-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      animation: revealUp 0.3s 0.05s ease both;
+    }
+
+    .alert-stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      animation: revealUp 0.3s 0.08s ease both;
+    }
+
+    .alert-stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 0.75rem;
+      border-radius: var(--radius-sm);
+      text-align: center;
+    }
+
+    .alert-stat-card .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+      color: var(--text-primary);
+    }
+
+    .alert-stat-card.danger .stat-value { color: #C0392B; }
+    .alert-stat-card.warn  .stat-value  { color: #D4820A; }
+
+    .alert-stat-card .stat-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <script>
+    if (sessionStorage.getItem('kl-auth') !== '1') window.location.href = 'index.html';
+  </script>
+
+  <div class="dashboard">
+
+    <!-- ── Navbar ── -->
+    <nav class="navbar">
+      <img src="assets/img/logo.png" alt="Kuroko Labs" class="navbar-logo" />
+      <div class="navbar-nav">
+        <a href="dashboard.html">Kalender</a>
+        <a href="posts.html">Posts</a>
+        <a href="alerts.html" class="active" style="display:inline-flex;align-items:center;gap:0.35rem;">
+          Alerts
+          <span class="navbar-badge alert" id="alerts-nav-badge" style="background:#d32f2f;color:#fff;font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:10px;letter-spacing:.04em;"></span>
+        </a>
+        <a href="settings.html">Ops</a>
+      </div>
+      <div class="navbar-right">
+        <div class="navbar-user" onclick="logout()">
+          <div class="navbar-avatar">A</div>
+          <span>Admin</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Filter</div>
+        <div class="platform-filter">
+          <div class="platform-item active" data-sev="all" onclick="setFilter('all', this)">
+            <div style="width:8px;height:8px;background:var(--border);border-radius:2px;flex-shrink:0;"></div>
+            <span class="platform-name">Alle</span>
+            <span class="platform-count" id="filter-count-all"></span>
+          </div>
+          <div class="platform-item" data-sev="high" onclick="setFilter('high', this)">
+            <div style="width:8px;height:8px;background:#C0392B;border-radius:2px;flex-shrink:0;"></div>
+            <span class="platform-name">Kritisch</span>
+            <span class="platform-count" id="filter-count-high"></span>
+          </div>
+          <div class="platform-item" data-sev="medium" onclick="setFilter('medium', this)">
+            <div style="width:8px;height:8px;background:#D4820A;border-radius:2px;flex-shrink:0;"></div>
+            <span class="platform-name">Mittel</span>
+            <span class="platform-count" id="filter-count-medium"></span>
+          </div>
+          <div class="platform-item" data-sev="low" onclick="setFilter('low', this)">
+            <div style="width:8px;height:8px;background:var(--text-muted);border-radius:2px;flex-shrink:0;"></div>
+            <span class="platform-name">Niedrig</span>
+            <span class="platform-count" id="filter-count-low"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Status</div>
+        <div class="platform-filter">
+          <div class="platform-item" data-read="unread" onclick="setReadFilter('unread', this)">
+            <span class="status-dot pending" style="width:8px;height:8px;border-radius:50%;border:1.5px solid var(--text-muted);flex-shrink:0;"></span>
+            <span class="platform-name">Ungelesen</span>
+          </div>
+          <div class="platform-item" data-read="read" onclick="setReadFilter('read', this)">
+            <span class="status-dot published" style="width:8px;height:8px;border-radius:50%;flex-shrink:0;"></span>
+            <span class="platform-name">Gelesen</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Aktionen</div>
+        <div class="sidebar-actions">
+          <button class="btn-sidebar" onclick="markAllRead()">
+            Alle als gelesen
+          </button>
+          <button class="btn-sidebar primary" onclick="generateFromAlert()">
+            Post generieren
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Quellen (aktiv)</div>
+        <div class="status-legend" style="gap:0.3rem;">
+          <div class="status-legend-item" style="font-size:10px;">
+            <span class="status-dot published" style="width:6px;height:6px;border-radius:50%;"></span>
+            Anthropic Research
+          </div>
+          <div class="status-legend-item" style="font-size:10px;">
+            <span class="status-dot published" style="width:6px;height:6px;border-radius:50%;"></span>
+            TechCrunch AI
+          </div>
+          <div class="status-legend-item" style="font-size:10px;">
+            <span class="status-dot published" style="width:6px;height:6px;border-radius:50%;"></span>
+            VentureBeat AI
+          </div>
+          <div class="status-legend-item" style="font-size:10px;">
+            <span class="status-dot published" style="width:6px;height:6px;border-radius:50%;"></span>
+            HuggingFace Blog
+          </div>
+          <div class="status-legend-item" style="font-size:10px;">
+            <span class="status-dot published" style="width:6px;height:6px;border-radius:50%;"></span>
+            Papers With Code
+          </div>
+          <div class="status-legend-item" style="font-size:10px;">
+            <span class="status-dot published" style="width:6px;height:6px;border-radius:50%;"></span>
+            DeepMind Blog
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ── Main ── -->
+    <div class="alerts-main">
+      <div class="page-content">
+        <div class="alerts-toolbar">
+          <span class="heading-lg">Breaking Alerts</span>
+          <span class="post-count-chip" id="alert-count"></span>
+        </div>
+
+        <!-- Stats strip -->
+        <div class="alert-stats-strip">
+          <div class="alert-stat-card danger">
+            <div class="stat-value" id="stat-high">—</div>
+            <div class="stat-label">Kritisch</div>
+          </div>
+          <div class="alert-stat-card warn">
+            <div class="stat-value" id="stat-medium">—</div>
+            <div class="stat-label">Mittel</div>
+          </div>
+          <div class="alert-stat-card">
+            <div class="stat-value" id="stat-low">—</div>
+            <div class="stat-label">Niedrig</div>
+          </div>
+          <div class="alert-stat-card" style="border-color:var(--black);">
+            <div class="stat-value" id="stat-unread" style="color:var(--black);">—</div>
+            <div class="stat-label">Ungelesen</div>
+          </div>
+        </div>
+
+        <!-- Alert list -->
+        <div class="alerts-list" id="alerts-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /dashboard -->
+
+  <script src="assets/js/demo-data.js"></script>
+  <script>
+    let currentSev  = 'all';
+    let currentRead = 'all';
+    let selectedAlertId = null;
+
+    function setFilter(sev, el) {
+      currentSev = sev;
+      document.querySelectorAll('[data-sev]').forEach(e => e.classList.remove('active'));
+      el.classList.add('active');
+      renderAlerts();
+    }
+
+    function setReadFilter(read, el) {
+      currentRead = currentRead === read ? 'all' : read;
+      document.querySelectorAll('[data-read]').forEach(e => e.classList.remove('active'));
+      if (currentRead !== 'all') el.classList.add('active');
+      renderAlerts();
+    }
+
+    function fmtAlertDate(iso) {
+      const d = new Date(iso);
+      const pad = n => String(n).padStart(2,'0');
+      return `${pad(d.getDate())}.${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())} Uhr`;
+    }
+
+    function severityLabel(sev) {
+      return { high: 'Kritisch', medium: 'Mittel', low: 'Niedrig' }[sev] || sev;
+    }
+
+    function renderAlerts() {
+      let alerts = [...DEMO_ALERTS];
+      if (currentSev !== 'all') alerts = alerts.filter(a => a.severity === currentSev);
+      if (currentRead === 'unread') alerts = alerts.filter(a => !a.read);
+      if (currentRead === 'read')   alerts = alerts.filter(a => a.read);
+
+      document.getElementById('alert-count').textContent = `${alerts.length} Alerts`;
+      document.getElementById('stat-high').textContent   = DEMO_ALERTS.filter(a => a.severity==='high').length;
+      document.getElementById('stat-medium').textContent = DEMO_ALERTS.filter(a => a.severity==='medium').length;
+      document.getElementById('stat-low').textContent    = DEMO_ALERTS.filter(a => a.severity==='low').length;
+      const unread = DEMO_ALERTS.filter(a => !a.read).length;
+      document.getElementById('stat-unread').textContent = unread;
+
+      // Update counts
+      document.getElementById('filter-count-all').textContent    = DEMO_ALERTS.length;
+      document.getElementById('filter-count-high').textContent   = DEMO_ALERTS.filter(a=>a.severity==='high').length;
+      document.getElementById('filter-count-medium').textContent = DEMO_ALERTS.filter(a=>a.severity==='medium').length;
+      document.getElementById('filter-count-low').textContent    = DEMO_ALERTS.filter(a=>a.severity==='low').length;
+
+      // Nav badge
+      const navBadge = document.getElementById('alerts-nav-badge');
+      if (unread > 0) { navBadge.textContent = `${unread} neu`; navBadge.style.display = ''; }
+      else navBadge.style.display = 'none';
+
+      const list = document.getElementById('alerts-list');
+      if (alerts.length === 0) {
+        list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;text-align:center;padding:3rem 0;">Keine Alerts in dieser Kategorie.</div>';
+        return;
+      }
+
+      list.innerHTML = alerts.map((a, i) => {
+        const platformsHtml = a.recommended_platforms.map(pl =>
+          `<span class="platform-badge ${pl}" style="font-size:8px;padding:.1rem .4rem;">${pl.toUpperCase().slice(0,2)}</span>`
+        ).join('');
+
+        return `
+        <div class="alert-card sev-${a.severity}${a.read ? ' read' : ' unread'}"
+             id="alert-${a.id}"
+             style="animation: revealUp 0.3s ${i*0.04}s ease both;"
+             onclick="markRead(${a.id})">
+          <div class="alert-header">
+            <span class="alert-severity ${a.severity}">${severityLabel(a.severity)}</span>
+            <div class="alert-title">${a.title}</div>
+            ${!a.read ? '<div class="alert-unread-dot"></div>' : ''}
+          </div>
+          <div class="alert-summary">${a.summary}</div>
+          <div class="alert-footer">
+            <span class="alert-source">${a.source}</span>
+            <div class="alert-platforms">${platformsHtml}</div>
+            <button class="btn" style="font-size:8px;padding:.2rem .5rem;margin-left:.5rem;"
+                    onclick="event.stopPropagation(); generatePostFromAlert(${a.id})">
+              ✦ Post generieren
+            </button>
+            <span class="alert-time">${fmtAlertDate(a.created_at)}</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function markRead(id) {
+      const alert = DEMO_ALERTS.find(a => a.id === id);
+      if (alert && !alert.read) {
+        alert.read = true;
+        renderAlerts();
+      }
+    }
+
+    function markAllRead() {
+      DEMO_ALERTS.forEach(a => a.read = true);
+      renderAlerts();
+      showToast('Alle Alerts als gelesen markiert.');
+    }
+
+    function generatePostFromAlert(id) {
+      const alert = DEMO_ALERTS.find(a => a.id === id);
+      if (!alert) return;
+      markRead(id);
+      showToast(`Post-Generierung gestartet: "${alert.title.substring(0,40)}…"`);
+      setTimeout(() => {
+        const platform = alert.recommended_platforms[0];
+        showToast(`✓ ${platform.charAt(0).toUpperCase()+platform.slice(1)}-Post generiert — Score 8.9`);
+      }, 2000);
+    }
+
+    function generateFromAlert() {
+      const unread = DEMO_ALERTS.find(a => !a.read) || DEMO_ALERTS[0];
+      if (unread) generatePostFromAlert(unread.id);
+    }
+
+    function showToast(msg) {
+      let t = document.getElementById('toast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'toast';
+        t.style.cssText = `
+          position:fixed;bottom:1.75rem;left:50%;transform:translateX(-50%);
+          background:var(--black);color:#fff;padding:.65rem 1.25rem;
+          font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+          border-radius:6px;z-index:1000;opacity:0;transition:opacity .22s;
+          pointer-events:none;white-space:nowrap;
+          box-shadow:0 4px 20px rgba(20,20,18,0.25);
+        `;
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.style.opacity = '1';
+      setTimeout(() => t.style.opacity = '0', 2800);
+    }
+
+    function logout() {
+      sessionStorage.removeItem('kl-auth');
+      window.location.href = 'index.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', renderAlerts);
+  </script>
+</body>
+</html>

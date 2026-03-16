@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalender — Kuroko Labs Social Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/main.css" />
+</head>
+<body>
+  <script>
+    if (sessionStorage.getItem('kl-auth') !== '1') {
+      window.location.href = 'index.html';
+    }
+  </script>
+
+  <div class="dashboard">
+
+    <!-- ── Navbar ── -->
+    <nav class="navbar">
+      <img src="assets/img/logo.png" alt="Kuroko Labs" class="navbar-logo" />
+
+      <div class="navbar-nav">
+        <a href="dashboard.html" class="active">Kalender</a>
+        <a href="posts.html">Posts</a>
+        <a href="alerts.html" style="display:inline-flex;align-items:center;gap:0.35rem;">
+          Alerts
+          <span class="navbar-badge alert" id="nav-alerts-badge" style="background:#d32f2f;color:#fff;font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:10px;letter-spacing:.04em;">3 neu</span>
+        </a>
+        <a href="settings.html">Ops</a>
+      </div>
+
+      <div class="navbar-right">
+        <span class="navbar-badge alert" id="nav-pending-badge" style="display:none;">3 ausstehend</span>
+        <div class="navbar-user" onclick="logout()">
+          <div class="navbar-avatar">A</div>
+          <span>Admin</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+
+      <!-- Platform filter -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Plattformen</div>
+        <div class="platform-filter">
+          <div class="platform-item active" data-platform="all">
+            <div style="width:8px;height:8px;background:var(--border);border-radius:2px;flex-shrink:0;"></div>
+            <span class="platform-name">Alle</span>
+            <span class="platform-count" id="count-all"></span>
+          </div>
+          <div class="platform-item" data-platform="linkedin">
+            <div class="platform-dot linkedin"></div>
+            <span class="platform-name">LinkedIn</span>
+            <span class="platform-count" id="count-linkedin"></span>
+          </div>
+          <div class="platform-item" data-platform="twitter">
+            <div class="platform-dot twitter"></div>
+            <span class="platform-name">X / Twitter</span>
+            <span class="platform-count" id="count-twitter"></span>
+          </div>
+          <div class="platform-item" data-platform="instagram">
+            <div class="platform-dot instagram"></div>
+            <span class="platform-name">Instagram</span>
+            <span class="platform-count" id="count-instagram"></span>
+          </div>
+          <div class="platform-item" data-platform="threads">
+            <div class="platform-dot threads"></div>
+            <span class="platform-name">Threads</span>
+            <span class="platform-count" id="count-threads"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">März 2026</div>
+        <div class="stat-grid">
+          <div class="stat-item highlight">
+            <div class="stat-value" id="stat-total">—</div>
+            <div class="stat-label">Gesamt</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="stat-published">—</div>
+            <div class="stat-label">Publiziert</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="stat-scheduled">—</div>
+            <div class="stat-label">Geplant</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="stat-pending" style="color:var(--text-muted);">—</div>
+            <div class="stat-label">Ausstehend</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2 stats -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Phase 2 · März</div>
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="stat-value" id="stat-longform">—</div>
+            <div class="stat-label">Longform</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="stat-evergreen">—</div>
+            <div class="stat-label">Evergreen</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="stat-repurposed">—</div>
+            <div class="stat-label">Repurposed</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="stat-carousel">—</div>
+            <div class="stat-label">Carousels</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Aktionen</div>
+        <div class="sidebar-actions">
+          <button class="btn-sidebar primary" onclick="runWeeklyBatch()">
+            Weekly Batch
+          </button>
+          <button class="btn-sidebar" onclick="window.location.href='posts.html'">
+            Alle Posts
+          </button>
+          <button class="btn-sidebar" onclick="window.location.href='alerts.html'">
+            Alerts
+          </button>
+          <button class="btn-sidebar" onclick="window.location.href='settings.html'">
+            Ops
+          </button>
+        </div>
+      </div>
+
+      <!-- Status legend -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Status</div>
+        <div class="status-legend">
+          <div class="status-legend-item">
+            <span class="status-dot published" style="width:8px;height:8px;border-radius:50%;"></span>
+            Veröffentlicht
+          </div>
+          <div class="status-legend-item">
+            <span class="status-dot scheduled" style="width:8px;height:8px;border-radius:50%;"></span>
+            Geplant
+          </div>
+          <div class="status-legend-item">
+            <span class="status-dot pending" style="width:8px;height:8px;border-radius:50%;border:1.5px solid var(--text-muted);"></span>
+            Ausstehend
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <div class="main-content" id="main-content">
+
+      <!-- Calendar -->
+      <div class="calendar-wrap" id="cal-wrap">
+        <div class="cal-header">
+          <span class="cal-title" id="cal-title">KW 11 · März 2026</span>
+          <div style="display:flex;align-items:center;gap:0.4rem;">
+            <div class="cal-nav">
+              <button class="cal-nav-btn" onclick="prevWeek()" title="Vorherige Woche">‹</button>
+              <button class="cal-nav-btn" onclick="nextWeek()" title="Nächste Woche">›</button>
+            </div>
+            <button class="cal-today-btn" onclick="goToday()">Heute</button>
+          </div>
+        </div>
+
+        <!-- Week grid — rendered by dashboard.js -->
+        <div id="cal-week-grid" class="cal-week-grid"></div>
+
+        <!-- Platform legend -->
+        <div class="platform-legend">
+          <div class="platform-legend-item">
+            <span class="platform-legend-stripe linkedin"></span>
+            LinkedIn
+          </div>
+          <div class="platform-legend-item">
+            <span class="platform-legend-stripe twitter"></span>
+            X / Twitter
+          </div>
+          <div class="platform-legend-item">
+            <span class="platform-legend-stripe instagram"></span>
+            Instagram
+          </div>
+          <div class="platform-legend-item">
+            <span class="platform-legend-stripe threads"></span>
+            Threads
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Panel (slides in from right) -->
+      <div class="detail-panel" id="detail-panel">
+
+        <div class="detail-header">
+          <div>
+            <div class="label">Post-Detail</div>
+          </div>
+          <button class="detail-close" onclick="closePanel()">✕</button>
+        </div>
+
+        <div class="detail-body" id="detail-body">
+          <p style="color:var(--text-muted);font-size:12px;line-height:1.6;">Klicke auf eine Post-Karte im Kalender um die Details anzuzeigen.</p>
+        </div>
+
+        <!-- Chat window -->
+        <div class="chat-section">
+          <div class="chat-header">Agent-Edit · Claude</div>
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-msg assistant">
+              Wähle einen Post aus um ihn zu bearbeiten.
+            </div>
+          </div>
+          <div class="chat-input-row">
+            <input
+              type="text"
+              class="chat-input"
+              id="chat-input"
+              placeholder='z.B. "Kürze auf 150 Wörter"'
+              onkeydown="handleChatKey(event)"
+            />
+            <button class="chat-send" onclick="sendChat()">Senden</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /main-content -->
+
+  </div><!-- /dashboard -->
+
+  <script src="assets/js/demo-data.js"></script>
+  <script src="assets/js/dashboard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const allEl = document.getElementById('count-all');
+      if (allEl) allEl.textContent = STATS.totalMonth;
+
+      const badge = document.getElementById('nav-pending-badge');
+      if (badge) {
+        badge.textContent = `${STATS.pending} ausstehend`;
+        badge.style.display = STATS.pending > 0 ? '' : 'none';
+      }
+
+      const alertsBadge = document.getElementById('nav-alerts-badge');
+      if (alertsBadge) {
+        const unread = STATS.alertsUnread;
+        if (unread > 0) alertsBadge.textContent = `${unread} neu`;
+        else alertsBadge.style.display = 'none';
+      }
+
+      // Phase 2 sidebar stats
+      const el = id => document.getElementById(id);
+      if (el('stat-longform'))   el('stat-longform').textContent   = STATS.longform;
+      if (el('stat-evergreen'))  el('stat-evergreen').textContent  = STATS.evergreen;
+      if (el('stat-repurposed')) el('stat-repurposed').textContent = STATS.repurposed;
+      if (el('stat-carousel'))   el('stat-carousel').textContent   = STATS.withCarousel;
+    });
+
+    function logout() {
+      sessionStorage.removeItem('kl-auth');
+      window.location.href = 'index.html';
+    }
+
+    function runWeeklyBatch() {
+      showToast('Weekly Batch gestartet — generiert Woche ab 16.03.2026');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Posts — Kuroko Labs{% endblock %}
+{% block content %}
+<div class="mt-2">
+
+  <div class="page-heading">
+    <h1>Posts</h1>
+    <span class="heading-meta">{{ posts | length }} Einträge</span>
+  </div>
+
+  <!-- Filters: Platform + Phase 2 feature types -->
+  <div class="flex gap-2 items-center" style="flex-wrap:wrap;margin-bottom:1rem;">
+
+    <!-- Platform filter -->
+    <div class="filter-tabs">
+      <a href="/posts" class="{% if platform_filter == '' and not extra_filter %}active{% endif %}">Alle</a>
+      {% for p in ['linkedin','twitter','instagram','threads'] %}
+      <a href="/posts?platform={{ p }}"
+         class="{% if platform_filter == p %}active{% endif %}">
+        {{ p }}
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Phase 2 filters -->
+    <div class="filter-tabs">
+      <a href="/posts?feature=longform"
+         class="{% if extra_filter == 'longform' %}active{% endif %}">Longform</a>
+      <a href="/posts?feature=evergreen"
+         class="{% if extra_filter == 'evergreen' %}active{% endif %}">Evergreen</a>
+      <a href="/posts?feature=repurposed"
+         class="{% if extra_filter == 'repurposed' %}active{% endif %}">Repurposed</a>
+      <a href="/posts?feature=carousel"
+         class="{% if extra_filter == 'carousel' %}active{% endif %}">Carousel</a>
+    </div>
+
+  </div>
+
+  <table class="posts-table">
+    <thead>
+      <tr>
+        <th>Platform</th>
+        <th>Typ</th>
+        <th>Tags</th>
+        <th>Geplant</th>
+        <th>Status</th>
+        <th>Score</th>
+        <th>Engagement</th>
+        <th>Vorschau</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for post in posts %}
+      {% set is_longform   = post.post_type == 'longform_analysis' %}
+      {% set is_evergreen  = post.is_evergreen %}
+      {% set is_repurposed = post.repurposed_from_id %}
+      {% set has_carousel  = post.carousel_pdf_path %}
+      <tr class="{% if is_longform %}row-longform{% elif is_evergreen %}row-evergreen{% elif is_repurposed %}row-repurposed{% endif %}">
+
+        <td><span class="badge badge-{{ post.platform }}">{{ post.platform }}</span></td>
+
+        <td class="mono" style="font-size:.72rem;color:var(--gray-600);">
+          {{ post.post_type or '—' }}
+        </td>
+
+        <!-- Phase 2 tags -->
+        <td>
+          <div class="flex gap-1" style="flex-wrap:wrap;">
+            {% if is_evergreen %}
+              <span class="tag tag-evergreen" title="Evergreen — re-scheduled high-performer">↺ EG</span>
+            {% endif %}
+            {% if is_repurposed %}
+              <span class="tag tag-repurposed" title="Repurposed from #{{ post.repurposed_from_id }}">↳ #{{ post.repurposed_from_id }}</span>
+            {% endif %}
+            {% if is_longform %}
+              <span class="tag tag-longform" title="Long-form — 600–800 Wörter">LF</span>
+            {% endif %}
+            {% if has_carousel %}
+              <span class="tag tag-carousel" title="Carousel PDF vorhanden">PDF</span>
+            {% endif %}
+          </div>
+        </td>
+
+        <td class="mono" style="font-size:.75rem;color:var(--gray-600);">
+          {{ (post.scheduled_at or '—')[:16] }}
+        </td>
+
+        <td><span class="status status-{{ post.status }}">{{ post.status }}</span></td>
+
+        <td class="mono" style="font-weight:600;font-size:.9rem;">
+          {{ "%.1f"|format(post.quality_score or 0) }}
+        </td>
+
+        <!-- Mini engagement bar (only for published posts with data) -->
+        <td>
+          {% set total_eng = (post.likes or 0) + (post.shares or 0) %}
+          {% if post.status == 'published' %}
+            <div class="engagement-mini">
+              {% if total_eng > 0 %}
+                <span class="eng-bar">
+                  <span class="eng-bar-fill" style="width:{{ [((post.likes or 0) / [total_eng, 1]|max) * 100, 100]|min|int }}%"></span>
+                </span>
+                <span>{{ post.likes or 0 }}♥ {{ post.shares or 0 }}↗</span>
+              {% else %}
+                <span style="color:var(--gray-300);">—</span>
+              {% endif %}
+            </div>
+          {% else %}
+            <span style="color:var(--gray-300);font-size:.72rem;">—</span>
+          {% endif %}
+        </td>
+
+        <td style="max-width:220px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+                   font-size:.78rem;color:var(--gray-600);">
+          {{ post.content[:75] }}…
+        </td>
+
+        <td>
+          <a href="/posts/{{ post.id }}" class="btn btn-sm">Detail</a>
+        </td>
+
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="9" style="padding:3rem;text-align:center;color:var(--gray-400);">
+          Keine Posts gefunden.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+{% endblock %}

@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Einstellungen — Kuroko Labs Social Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <style>
+    /* ── Settings-page local overrides ─────────── */
+    .settings-scroll {
+      grid-column: 2;
+      overflow-y: auto;
+      height: 100%;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: rgba(20,20,18,0.06);
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      color: var(--text-mid);
+    }
+
+    /* Section grouping */
+    .settings-group {
+      padding: 1.75rem 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .settings-group:last-child { border-bottom: none; }
+
+    .settings-group-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+      margin-bottom: 1.25rem;
+    }
+
+    .settings-group-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: -0.9rem;
+      margin-bottom: 1.25rem;
+      line-height: 1.6;
+    }
+
+    /* Setting row */
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid rgba(226,226,223,0.55);
+    }
+    .setting-row:last-of-type { border-bottom: none; }
+
+    .setting-info h4 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.2rem;
+    }
+    .setting-info p {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.55;
+      max-width: 340px;
+    }
+
+    /* Slider control */
+    .slider-control {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-shrink: 0;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 110px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      outline: none;
+      accent-color: var(--black);
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--black);
+      cursor: pointer;
+    }
+
+    .mono-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      min-width: 3rem;
+      text-align: right;
+      color: var(--text-primary);
+    }
+
+    /* Select */
+    select {
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text-primary);
+      padding: 0.4rem 0.75rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color 0.15s;
+      flex-shrink: 0;
+    }
+    select:focus { border-color: var(--black); }
+
+    /* Image rates grid */
+    .img-rates-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem 2rem;
+      margin-top: 0.5rem;
+    }
+
+    .img-rate-row {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .img-rate-label {
+      width: 80px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Posting schedule table */
+    .posting-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      font-size: 12px;
+    }
+    .posting-table th {
+      padding: 0.55rem 0.85rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-align: left;
+      background: var(--sidebar-bg);
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .posting-table td {
+      padding: 0.5rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      vertical-align: middle;
+    }
+    .posting-table tr:last-child td { border-bottom: none; }
+    .posting-table tr:hover td { background: var(--bg); }
+    .posting-table td:first-child {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 11px;
+    }
+
+    .time-input {
+      width: 62px;
+      padding: 0.28rem 0.45rem;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 3px;
+      outline: none;
+      text-align: center;
+      transition: border-color 0.15s;
+    }
+    .time-input:focus { border-color: var(--black); background: #fff; }
+    .time-input:disabled {
+      color: var(--border);
+      background: transparent;
+      border-color: var(--border);
+      cursor: default;
+    }
+
+    .time-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .time-sep {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Channel table */
+    .channel-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      font-size: 12px;
+    }
+    .channel-table tr:first-child td { border-top: none; }
+    .channel-table td {
+      padding: 0.65rem 0.9rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      vertical-align: middle;
+    }
+    .channel-table tr:last-child td { border-bottom: none; }
+    .channel-table tr:hover td { background: var(--bg); }
+    .channel-status-ok  { color: #2E8B57; font-size: 11px; font-weight: 600; }
+    .channel-status-miss { color: var(--text-muted); font-size: 11px; }
+
+    /* Toggle switch */
+    .toggle { position: relative; display: inline-flex; align-items: center; cursor: pointer; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-track {
+      width: 36px; height: 20px;
+      background: var(--border);
+      border-radius: 10px;
+      position: relative;
+      transition: background 0.2s;
+    }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 14px; height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    .toggle input:checked + .toggle-track { background: var(--black); }
+    .toggle input:checked + .toggle-track::after { transform: translateX(16px); }
+
+    /* Status badges */
+    .status-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 100px;
+    }
+    .status-badge.published { background: rgba(20,20,18,0.08); color: var(--text-primary); }
+    .status-badge.pending   { background: rgba(164,164,159,0.15); color: var(--text-muted); }
+
+    /* Save bar */
+    .save-bar {
+      position: sticky;
+      bottom: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* Nav sidebar active */
+    .sidebar .platform-item.active .platform-name { color: var(--text-primary); }
+  </style>
+</head>
+<body>
+  <script>
+    if (sessionStorage.getItem('kl-auth') !== '1') window.location.href = 'index.html';
+  </script>
+
+  <div class="dashboard">
+
+    <!-- ── Navbar ── -->
+    <nav class="navbar">
+      <img src="assets/img/logo.png" alt="Kuroko Labs" class="navbar-logo" />
+      <div class="navbar-nav">
+        <a href="dashboard.html">Kalender</a>
+        <a href="posts.html">Posts</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="settings.html" class="active">Ops</a>
+      </div>
+      <div class="navbar-right">
+        <div class="navbar-user" onclick="logout()">
+          <div class="navbar-avatar">A</div>
+          <span>Admin</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Einstellungen</div>
+        <div class="platform-filter">
+          <div class="platform-item active" onclick="scrollTo('sec-ops', this)">
+            <span class="platform-name">Ops-Center</span>
+          </div>
+          <div class="platform-item" onclick="scrollTo('sec-channels', this)">
+            <span class="platform-name">Buffer-Kanäle</span>
+          </div>
+          <div class="platform-item" onclick="scrollTo('sec-images', this)">
+            <span class="platform-name">Bildgenerierung</span>
+          </div>
+          <div class="platform-item" onclick="scrollTo('sec-schedule', this)">
+            <span class="platform-name">Posting-Zeiten</span>
+          </div>
+          <div class="platform-item" onclick="scrollTo('sec-quality', this)">
+            <span class="platform-name">Qualität</span>
+          </div>
+          <div class="platform-item" onclick="scrollTo('sec-automation', this)">
+            <span class="platform-name">Automatisierung</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section" style="margin-top:auto;">
+        <button class="btn-sidebar primary" onclick="saveAll()">Speichern</button>
+      </div>
+    </aside>
+
+    <!-- ── Main scroll area ── -->
+    <div class="settings-scroll" id="settings-scroll">
+
+      <!-- ────────────────── Ops Center (Phase 2) ────────────────── -->
+      <div class="settings-group" id="sec-ops">
+        <div class="settings-group-title">Ops-Center — Manuelle Auslöser</div>
+        <div class="settings-group-desc">Phase-2-Jobs manuell starten. Im Produktionsbetrieb laufen diese automatisch via APScheduler.</div>
+
+        <div class="ops-grid">
+          <div class="ops-card" id="ops-weekly" onclick="runOps('weekly')">
+            <div class="ops-card-icon">📅</div>
+            <div class="ops-card-title">Weekly Batch</div>
+            <div class="ops-card-desc">Generiert Posts für alle 4 Plattformen (So 22:00 Uhr automatisch)</div>
+            <div class="ops-card-result" id="res-weekly"></div>
+          </div>
+          <div class="ops-card" id="ops-analytics" onclick="runOps('analytics')">
+            <div class="ops-card-icon">📊</div>
+            <div class="ops-card-title">Analytics Sync</div>
+            <div class="ops-card-desc">Buffer Analytics API abrufen, Engagement-Metriken in DB speichern</div>
+            <div class="ops-card-result" id="res-analytics"></div>
+          </div>
+          <div class="ops-card" id="ops-repurposing" onclick="runOps('repurposing')">
+            <div class="ops-card-icon">↳</div>
+            <div class="ops-card-title">Repurposing</div>
+            <div class="ops-card-desc">LinkedIn-Posts ≥ 8.5 Score → X/Threads umschreiben (tägl. 06:00)</div>
+            <div class="ops-card-result" id="res-repurposing"></div>
+          </div>
+          <div class="ops-card" id="ops-evergreen" onclick="runOps('evergreen')">
+            <div class="ops-card-icon">↺</div>
+            <div class="ops-card-title">Evergreen Rotation</div>
+            <div class="ops-card-desc">Posts mit ≥ 50 Likes + Shares nach 60 Tagen neu schedulen</div>
+            <div class="ops-card-result" id="res-evergreen"></div>
+          </div>
+          <div class="ops-card" id="ops-longform" onclick="runOps('longform')">
+            <div class="ops-card-icon">✦</div>
+            <div class="ops-card-title">Longform LinkedIn</div>
+            <div class="ops-card-desc">600–800 Wörter Analyse-Post via Claude Sonnet (Mi 07:30)</div>
+            <div class="ops-card-result" id="res-longform"></div>
+          </div>
+          <div class="ops-card" id="ops-competitors" onclick="runOps('competitors')">
+            <div class="ops-card-icon">🔍</div>
+            <div class="ops-card-title">Competitor Scraper</div>
+            <div class="ops-card-desc">Aleph Alpha, DeepL, SAP, Siemens, Bosch — Content-Inspiration</div>
+            <div class="ops-card-result" id="res-competitors"></div>
+          </div>
+        </div>
+
+        <!-- Buffer Webhook Status -->
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
+          <div class="settings-group-title" style="font-size:12px;margin-bottom:0.65rem;">Buffer Webhook — Status-Sync</div>
+          <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+            <div style="font-size:12px;color:var(--text-primary);">
+              <span class="webhook-dot ok"></span>
+              <code>POST /webhooks/buffer</code> — HMAC-SHA256 verifiziert
+            </div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);">Letzte Payload: 14.03.2026 · post.published</span>
+          </div>
+          <table style="width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;font-size:11px;margin-top:0.75rem;">
+            <tr style="background:var(--sidebar-bg);">
+              <td style="padding:.45rem .75rem;font-weight:600;border-bottom:1px solid var(--border);color:var(--text-muted);font-size:9px;letter-spacing:.1em;text-transform:uppercase;">Event</td>
+              <td style="padding:.45rem .75rem;font-weight:600;border-bottom:1px solid var(--border);color:var(--text-muted);font-size:9px;letter-spacing:.1em;text-transform:uppercase;">Buffer Post ID</td>
+              <td style="padding:.45rem .75rem;font-weight:600;border-bottom:1px solid var(--border);color:var(--text-muted);font-size:9px;letter-spacing:.1em;text-transform:uppercase;">Status</td>
+              <td style="padding:.45rem .75rem;font-weight:600;border-bottom:1px solid var(--border);color:var(--text-muted);font-size:9px;letter-spacing:.1em;text-transform:uppercase;">Eingang</td>
+            </tr>
+            <tr style="background:var(--surface);">
+              <td style="padding:.45rem .75rem;border-bottom:1px solid var(--border);"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(46,139,87,0.1);color:#2E8B57;padding:.1rem .4rem;border-radius:3px;">post.published</span></td>
+              <td style="padding:.45rem .75rem;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);">buf_li_7a2f…b4d1</td>
+              <td style="padding:.45rem .75rem;border-bottom:1px solid var(--border);color:#2E8B57;font-weight:600;">→ published</td>
+              <td style="padding:.45rem .75rem;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);">14.03.2026 09:12</td>
+            </tr>
+            <tr style="background:var(--bg);">
+              <td style="padding:.45rem .75rem;"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(192,57,43,0.1);color:#C0392B;padding:.1rem .4rem;border-radius:3px;">post.failed</span></td>
+              <td style="padding:.45rem .75rem;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);">buf_ig_3c9e…a7f2</td>
+              <td style="padding:.45rem .75rem;color:#C0392B;font-weight:600;">→ failed</td>
+              <td style="padding:.45rem .75rem;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);">12.03.2026 14:33</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- ────────────────── Buffer Channels ────────────────── -->
+      <div class="settings-group" id="sec-channels">
+        <div class="settings-group-title">Buffer Channel-Konfiguration</div>
+        <div class="settings-group-desc">Verbinde deine Social-Media-Kanäle über Buffer. Channel-IDs werden in <code>.env</code> gesetzt.</div>
+
+        <table class="channel-table">
+          <tr>
+            <td style="width:110px;"><span class="platform-badge linkedin">LinkedIn</span></td>
+            <td><code>BUFFER_CHANNEL_ID</code></td>
+            <td class="channel-status-ok">✓ Konfiguriert</td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);">li_ch_7a2f…b4d1</td>
+          </tr>
+          <tr>
+            <td><span class="platform-badge twitter">X / Twitter</span></td>
+            <td><code>BUFFER_X_CHANNEL_ID</code></td>
+            <td class="channel-status-ok">✓ Konfiguriert</td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);">x_ch_3c9e…a7f2</td>
+          </tr>
+          <tr>
+            <td><span class="platform-badge instagram">Instagram</span></td>
+            <td><code>BUFFER_IG_CHANNEL_ID</code></td>
+            <td class="channel-status-ok">✓ Konfiguriert</td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);">ig_ch_8d1c…e3b0</td>
+          </tr>
+          <tr>
+            <td><span class="platform-badge threads">Threads</span></td>
+            <td><code>BUFFER_THREADS_CHANNEL_ID</code></td>
+            <td class="channel-status-miss">— Nicht gesetzt</td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);"></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- ────────────────── Image Generation ────────────────── -->
+      <div class="settings-group" id="sec-images">
+        <div class="settings-group-title">KI-Bildgenerierung (Gemini Imagen)</div>
+        <div class="settings-group-desc">Anteil der Posts die ein KI-generiertes Bild erhalten, pro Plattform. Format: schwarz-weiß, industriell-minimalistisch, 1080×1080 px.</div>
+
+        <div class="img-rates-grid">
+          <div class="img-rate-row">
+            <div class="img-rate-label">
+              <div class="platform-dot linkedin" style="width:8px;height:8px;border-radius:50%;background:var(--platform-linkedin);flex-shrink:0;"></div>
+              LinkedIn
+            </div>
+            <input type="range" min="0" max="100" step="10" value="20" id="img-linkedin"
+                   oninput="updateRate('linkedin', this.value)" />
+            <span class="mono-val" id="img-val-linkedin">20%</span>
+          </div>
+
+          <div class="img-rate-row">
+            <div class="img-rate-label">
+              <div class="platform-dot twitter" style="width:8px;height:8px;border-radius:50%;background:var(--platform-twitter);flex-shrink:0;"></div>
+              X / Twitter
+            </div>
+            <input type="range" min="0" max="100" step="10" value="10" id="img-twitter"
+                   oninput="updateRate('twitter', this.value)" />
+            <span class="mono-val" id="img-val-twitter">10%</span>
+          </div>
+
+          <div class="img-rate-row">
+            <div class="img-rate-label">
+              <div class="platform-dot instagram" style="width:8px;height:8px;border-radius:50%;background:var(--platform-instagram);flex-shrink:0;"></div>
+              Instagram
+            </div>
+            <input type="range" min="0" max="100" step="10" value="60" id="img-instagram"
+                   oninput="updateRate('instagram', this.value)" />
+            <span class="mono-val" id="img-val-instagram">60%</span>
+          </div>
+
+          <div class="img-rate-row">
+            <div class="img-rate-label">
+              <div class="platform-dot threads" style="width:8px;height:8px;border-radius:50%;background:var(--platform-threads);flex-shrink:0;"></div>
+              Threads
+            </div>
+            <input type="range" min="0" max="100" step="10" value="0" id="img-threads"
+                   oninput="updateRate('threads', this.value)" />
+            <span class="mono-val" id="img-val-threads">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ────────────────── Posting Schedule ────────────────── -->
+      <div class="settings-group" id="sec-schedule">
+        <div class="settings-group-title">Posting-Zeiten</div>
+        <div class="settings-group-desc">Zeitzone: Europe/Berlin. Leer lassen um eine Plattform an einem Tag zu deaktivieren. Jitter wird separat eingestellt.</div>
+
+        <table class="posting-table">
+          <thead>
+            <tr>
+              <th style="width:90px;">Tag</th>
+              <th>LinkedIn</th>
+              <th>X / Twitter</th>
+              <th>Instagram</th>
+              <th>Threads</th>
+            </tr>
+          </thead>
+          <tbody id="schedule-tbody"></tbody>
+        </table>
+
+        <div class="setting-row" style="margin-top:1.25rem;">
+          <div class="setting-info">
+            <h4>Jitter (±Minuten)</h4>
+            <p>Zufällige Verschiebung der Postingzeit für menschlicheres Verhalten (Bot-Detection-Schutz).</p>
+          </div>
+          <div class="slider-control">
+            <input type="range" min="0" max="30" step="5" value="15" id="jitter-range"
+                   oninput="document.getElementById('jitter-val').textContent = '±' + this.value + ' min'" />
+            <span class="mono-val" id="jitter-val">±15 min</span>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Weekly Batch — Generierungstag</h4>
+            <p>Wann die wöchentliche Batch-Generierung für die kommende Woche startet.</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.65rem;">
+            <select id="batch-day">
+              <option>Montag</option>
+              <option>Dienstag</option>
+              <option>Mittwoch</option>
+              <option>Donnerstag</option>
+              <option>Freitag</option>
+              <option>Samstag</option>
+              <option selected>Sonntag</option>
+            </select>
+            <input type="time" value="22:00"
+                   style="border:1.5px solid var(--border);background:var(--bg);color:var(--text-primary);
+                          padding:0.38rem 0.65rem;font-family:'JetBrains Mono',monospace;font-size:12px;
+                          font-weight:600;border-radius:var(--radius-sm);outline:none;" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ────────────────── Quality ────────────────── -->
+      <div class="settings-group" id="sec-quality">
+        <div class="settings-group-title">Qualitäts-Einstellungen</div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Mindest-Score für Veröffentlichung</h4>
+            <p>Posts mit Score unter diesem Wert landen in der Review Queue und werden nicht automatisch publiziert.</p>
+          </div>
+          <div class="slider-control">
+            <input type="range" min="5" max="10" step="0.5" value="7" id="quality-range"
+                   oninput="document.getElementById('quality-val').textContent = this.value + ' / 10'" />
+            <span class="mono-val" id="quality-val">7 / 10</span>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Max. Generierungs-Versuche</h4>
+            <p>Wie oft Claude einen Post neu generiert bevor er in die Review Queue wandert.</p>
+          </div>
+          <select id="max-retries">
+            <option>1</option>
+            <option selected>2</option>
+            <option>3</option>
+            <option>4</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Posting-Frequenz pro Woche</h4>
+            <p>Gesamtzahl der Posts pro Plattform und Woche. Beeinflusst den Batch-Umfang.</p>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1.25rem;min-width:200px;">
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <span style="font-size:11px;color:var(--text-muted);width:70px;">LinkedIn</span>
+              <select style="padding:0.3rem 0.5rem;font-size:12px;" id="freq-linkedin">
+                <option>2</option><option selected>3</option><option>4</option><option>5</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <span style="font-size:11px;color:var(--text-muted);width:70px;">X / Twitter</span>
+              <select style="padding:0.3rem 0.5rem;font-size:12px;" id="freq-twitter">
+                <option>3</option><option>4</option><option selected>5</option><option>7</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <span style="font-size:11px;color:var(--text-muted);width:70px;">Instagram</span>
+              <select style="padding:0.3rem 0.5rem;font-size:12px;" id="freq-instagram">
+                <option>3</option><option>4</option><option selected>5</option><option>7</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <span style="font-size:11px;color:var(--text-muted);width:70px;">Threads</span>
+              <select style="padding:0.3rem 0.5rem;font-size:12px;" id="freq-threads">
+                <option>1</option><option>2</option><option selected>3</option><option>4</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Claude-Modell (Generierung)</h4>
+            <p>Modell für die wöchentliche Batch-Generierung. Haiku für Edits, Sonnet für Erstgenerierung empfohlen.</p>
+          </div>
+          <select id="gen-model">
+            <option>claude-haiku-4-5</option>
+            <option selected>claude-sonnet-4-6</option>
+            <option>claude-opus-4-6</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ────────────────── Automation ────────────────── -->
+      <div class="settings-group" id="sec-automation">
+        <div class="settings-group-title">Automatisierung</div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>Weekly Batch — Automatisch</h4>
+            <p>Jeden Sonntag um 22:00 Uhr werden Posts für die kommende Woche generiert (alle 4 Plattformen).</p>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="auto-batch" checked />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+
+        <div style="margin-top:0.25rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;">
+          <button class="btn primary" onclick="runBatch()">Jetzt ausführen</button>
+          <span id="batch-result" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);"></span>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:1.25rem 0;" />
+
+        <div class="settings-group-title" style="margin-bottom:0.75rem;">Instagram DM-Automatisierung</div>
+        <div class="settings-group-desc" style="margin-top:0;">Automatisch auf Instagram-DMs antworten (Claude-generiert). Standardmäßig deaktiviert — benötigt <code>IG_APP_SECRET</code> + <code>IG_WEBHOOK_VERIFY_TOKEN</code>.</div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <h4>DM-Automatisierung</h4>
+            <p>Eingehende Instagram-DMs werden via Webhook empfangen und mit Claude Haiku beantwortet.</p>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="dm-toggle" onchange="toggleDM(this)" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+
+        <div id="dm-status" style="margin-top:0.75rem;">
+          <span class="status-badge pending">Nicht konfiguriert</span>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:0.5rem;line-height:1.6;">
+            Benötigt: <code>IG_APP_SECRET</code> + <code>IG_WEBHOOK_VERIFY_TOKEN</code> in <code>.env</code>
+          </p>
+        </div>
+      </div>
+
+      <!-- Save bar -->
+      <div class="save-bar">
+        <button class="btn primary" onclick="saveAll()">Einstellungen speichern</button>
+        <span id="save-result" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);"></span>
+      </div>
+
+    </div><!-- /settings-scroll -->
+
+  </div><!-- /dashboard -->
+
+  <script>
+    // ── Ops Center ────────────────────────────────
+    const OPS_CONFIG = {
+      weekly:      { delay: 1800, msg: '✓ 16 Posts generiert — KW 12 · 16.–22.03.2026' },
+      analytics:   { delay: 1200, msg: '✓ Analytics synced — 47 Posts aktualisiert' },
+      repurposing: { delay: 1400, msg: '✓ 4 Posts repurposed → X + Threads' },
+      evergreen:   { delay: 1100, msg: '✓ 2 Evergreen-Posts neu geplant' },
+      longform:    { delay: 2200, msg: '✓ Longform LinkedIn-Post generiert — 724 Wörter, Score 9.1' },
+      competitors: { delay: 1600, msg: '✓ 5 Scraper ausgeführt — 12 neue Artikel gefunden' },
+    };
+
+    function runOps(key) {
+      const card = document.getElementById(`ops-${key}`);
+      const res  = document.getElementById(`res-${key}`);
+      if (!card || card.classList.contains('running')) return;
+
+      card.classList.add('running');
+      res.textContent = '';
+
+      const cfg = OPS_CONFIG[key];
+      setTimeout(() => {
+        card.classList.remove('running');
+        res.textContent = cfg.msg;
+        showToast(cfg.msg.replace('✓ ', ''));
+      }, cfg.delay);
+    }
+
+    // ── Scroll to section ──────────────────────────
+    function scrollTo(id, el) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.querySelectorAll('.sidebar .platform-item').forEach(e => e.classList.remove('active'));
+      if (el) el.classList.add('active');
+    }
+
+    // ── Image rate labels ──────────────────────────
+    function updateRate(platform, value) {
+      document.getElementById('img-val-' + platform).textContent = value + '%';
+    }
+
+    // ── Build schedule table ───────────────────────
+    const DAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+    // [linkedin, twitter, instagram, threads] — '' = disabled
+    const DEFAULT_TIMES = [
+      ['08:00', '08:00', '08:00', '08:00'],
+      ['',      '12:00', '12:00', ''],
+      ['08:00', '08:00', '08:00', '08:00'],
+      ['',      '12:00', '12:00', ''],
+      ['08:00', '08:00', '08:00', '08:00'],
+      ['',      '12:00', '12:00', ''],
+      ['',      '10:00', '10:00', ''],
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const tbody = document.getElementById('schedule-tbody');
+      tbody.innerHTML = DAYS.map((day, i) => {
+        const cols = DEFAULT_TIMES[i].map(t => `
+          <td>
+            <input type="time" class="time-input" value="${t}" ${t === '' ? 'disabled placeholder="–"' : ''} />
+          </td>
+        `).join('');
+        return `<tr><td>${day}</td>${cols}</tr>`;
+      }).join('');
+    });
+
+    // ── DM toggle ─────────────────────────────────
+    function toggleDM(cb) {
+      const status = document.getElementById('dm-status');
+      if (cb.checked) {
+        status.innerHTML = `<span class="status-badge published">Aktiv</span>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:.5rem;line-height:1.6;">DM-Webhook empfangsbereit. Antworten via Claude Haiku.</p>`;
+      } else {
+        status.innerHTML = `<span class="status-badge pending">Nicht konfiguriert</span>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:.5rem;line-height:1.6;">Benötigt: <code>IG_APP_SECRET</code> + <code>IG_WEBHOOK_VERIFY_TOKEN</code> in <code>.env</code></p>`;
+      }
+    }
+
+    // ── Weekly batch ───────────────────────────────
+    function runBatch() {
+      const res = document.getElementById('batch-result');
+      res.textContent = 'Generierung läuft…';
+      setTimeout(() => {
+        res.textContent = '✓ 16 Posts generiert — KW 12 · 16.–22.03.2026';
+      }, 1800);
+    }
+
+    // ── Save ───────────────────────────────────────
+    function saveAll() {
+      const res = document.getElementById('save-result');
+      res.textContent = 'Speichern…';
+      setTimeout(() => {
+        res.textContent = '✓ Gespeichert';
+        showToast('Einstellungen gespeichert.');
+        setTimeout(() => res.textContent = '', 3000);
+      }, 600);
+    }
+
+    function showToast(msg) {
+      let t = document.getElementById('toast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'toast';
+        t.style.cssText = `
+          position:fixed;bottom:1.75rem;left:50%;transform:translateX(-50%);
+          background:var(--black);color:#fff;padding:.65rem 1.25rem;
+          font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+          border-radius:6px;z-index:1000;opacity:0;transition:opacity .22s;
+          pointer-events:none;white-space:nowrap;
+          box-shadow:0 4px 20px rgba(20,20,18,0.25);
+        `;
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.style.opacity = '1';
+      setTimeout(() => t.style.opacity = '0', 2600);
+    }
+
+    function logout() {
+      sessionStorage.removeItem('kl-auth');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

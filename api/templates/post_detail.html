@@ -1,0 +1,182 @@
+{# Partial template — rendered via HTMX into #post-detail-panel on calendar,
+   or rendered directly when accessed via /posts/{id}. #}
+<div class="card">
+
+  <!-- Top bar: platform + status + quality -->
+  <div class="flex items-center gap-2 justify-between" style="flex-wrap:wrap;">
+    <div class="flex gap-1 items-center" style="flex-wrap:wrap;">
+      <span class="badge badge-{{ post.platform }}">{{ post.platform }}</span>
+      <span class="status status-{{ post.status }}" style="margin-left:0.35rem;">{{ post.status }}</span>
+
+      {# Phase 2 feature tags #}
+      {% if post.is_evergreen %}
+        <span class="tag tag-evergreen" title="Evergreen — automatisch re-scheduled">↺ Evergreen</span>
+      {% endif %}
+      {% if post.repurposed_from_id %}
+        <span class="tag tag-repurposed" title="Repurposed von Post #{{ post.repurposed_from_id }}">
+          ↳ Repurposed
+        </span>
+      {% endif %}
+      {% if post.post_type == 'longform_analysis' %}
+        <span class="tag tag-longform">Long-form</span>
+      {% endif %}
+      {% if post.carousel_pdf_path %}
+        <span class="tag tag-carousel">PDF</span>
+      {% endif %}
+    </div>
+
+    <div style="text-align:right;">
+      <div class="quality-score">{{ "%.1f"|format(post.quality_score or 0) }}<small>/10</small></div>
+      {% if post.word_count %}
+        <div class="mono" style="font-size:.65rem;color:var(--gray-400);margin-top:.15rem;">
+          {{ post.word_count }} Wörter
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Meta row -->
+  <div class="flex gap-2 mt-2" style="flex-wrap:wrap;font-size:.75rem;color:var(--gray-600);">
+    <span><strong style="color:var(--gray-400);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;">Geplant</strong><br>
+      <span class="mono">{{ post.scheduled_at or '—' }}</span>
+    </span>
+    {% if post.published_at %}
+    <span><strong style="color:var(--gray-400);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;">Veröffentlicht</strong><br>
+      <span class="mono">{{ post.published_at }}</span>
+    </span>
+    {% endif %}
+    <span><strong style="color:var(--gray-400);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;">Typ</strong><br>
+      <span class="mono">{{ post.post_type or '—' }}</span>
+    </span>
+    {% if post.buffer_post_id %}
+    <span><strong style="color:var(--gray-400);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;">Buffer-ID</strong><br>
+      <span class="mono">{{ post.buffer_post_id }}</span>
+    </span>
+    {% endif %}
+  </div>
+
+  <!-- Repurposed-from banner (Phase 2 Feature 2) -->
+  {% if post.repurposed_from_id %}
+  <div class="repurposed-banner">
+    <span>↳</span>
+    <span>Repurposed von LinkedIn-Post
+      <a href="/posts/{{ post.repurposed_from_id }}">#{{ post.repurposed_from_id }}</a>
+    </span>
+  </div>
+  {% endif %}
+
+  <!-- Content -->
+  <div class="mt-2">
+    <label>Inhalt</label>
+    <div class="post-content" id="post-content-{{ post.id }}">{{ post.content }}</div>
+  </div>
+
+  <!-- Image -->
+  {% if post.image_path %}
+  <div class="post-image mt-2">
+    <label>Bild</label>
+    <img src="/output/images/{{ post.image_path | basename }}" alt="Post image" loading="lazy" />
+  </div>
+  {% endif %}
+
+  <!-- Carousel PDF (Phase 2 Feature 3) -->
+  {% if post.carousel_pdf_path %}
+  <div class="carousel-section">
+    <div class="carousel-icon">PDF<br>10</div>
+    <div style="flex:1;overflow:hidden;">
+      <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gray-400);margin-bottom:.2rem;">
+        Carousel PDF
+      </div>
+      <div class="carousel-path" title="{{ post.carousel_pdf_path }}">
+        {{ post.carousel_pdf_path | basename }}
+      </div>
+    </div>
+    <a href="/output/carousels/{{ post.carousel_pdf_path | basename }}"
+       class="btn btn-sm" target="_blank">
+      Download
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- Engagement metrics (Phase 2 Feature 5) — shown when published and has data -->
+  {% set has_metrics = post.status == 'published' and (post.likes or post.comments or post.shares or post.reach or post.impressions) %}
+  {% if has_metrics %}
+  <div style="margin-top:1rem;">
+    <label>Engagement</label>
+    <div class="metrics-grid">
+      {% set max_val = [post.likes or 0, post.comments or 0, post.shares or 0, post.reach or 0, post.impressions or 0] | max %}
+      {% for label, value in [
+          ('Likes',       post.likes or 0),
+          ('Comments',    post.comments or 0),
+          ('Shares',      post.shares or 0),
+          ('Reach',       post.reach or 0),
+          ('Impressions', post.impressions or 0),
+      ] %}
+      <div class="metric-cell">
+        <span class="metric-value">{{ value }}</span>
+        <span class="metric-label">{{ label }}</span>
+        <div class="metric-bar"
+             style="width:{{ ([value / [max_val, 1]|max * 100, 100]|min)|int }}%">
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% elif post.status == 'published' %}
+  <div class="mt-2 text-muted" style="font-size:.72rem;">
+    Engagement-Daten werden beim nächsten Analytics-Sync (tägl. 04:00) geladen.
+  </div>
+  {% endif %}
+
+  <!-- Action buttons -->
+  <div class="flex gap-1 mt-2" style="flex-wrap:wrap;">
+    {% if post.status == 'pending' %}
+    <button class="btn btn-solid btn-sm"
+            hx-post="/posts/{{ post.id }}/approve"
+            hx-target="#post-detail-panel"
+            hx-swap="innerHTML"
+            hx-indicator=".spinner">
+      <span class="htmx-indicator spinner"></span>
+      Freigeben &amp; Schedulen
+    </button>
+    {% endif %}
+    {% if not post.carousel_pdf_path and post.platform == 'linkedin' %}
+    <button class="btn btn-sm"
+            hx-post="/posts/{{ post.id }}/generate-carousel"
+            hx-target="#post-detail-panel"
+            hx-swap="innerHTML"
+            title="10-Slide Carousel PDF generieren">
+      ⊞ Carousel
+    </button>
+    {% endif %}
+    <a href="/posts/{{ post.id }}" class="btn btn-ghost btn-sm">Permalink</a>
+  </div>
+
+  <hr />
+
+  <!-- Chat / Agent Edit -->
+  <div class="card-title mt-2">Agent-Edit</div>
+  <div class="chat-window">
+    <div class="chat-messages" id="chat-messages-{{ post.id }}">
+      {% for edit in edits %}
+      <div class="chat-msg {{ edit.role }}">{{ edit.message }}</div>
+      {% endfor %}
+      {% if not edits %}
+      <div class="chat-msg assistant" style="color:var(--gray-400);border-color:var(--gray-200);">
+        Anweisungen: "Kürze auf 200 Wörter" · "Informellerer Ton" · "Generiere neues Bild" · "Such anderes Thema"
+      </div>
+      {% endif %}
+    </div>
+    <form class="chat-input-row"
+          hx-post="/posts/{{ post.id }}/chat"
+          hx-target="#chat-messages-{{ post.id }}"
+          hx-swap="beforeend"
+          hx-on::after-request="this.reset()">
+      <input type="text" name="message"
+             placeholder='z.B. "Kürze auf 150 Wörter"'
+             autocomplete="off" />
+      <button type="submit">→</button>
+    </form>
+  </div>
+
+</div>

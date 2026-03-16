@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Posts — Kuroko Labs Social Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <style>
+    /* Modal overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(20,20,18,0.45);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal-box {
+      background: var(--surface);
+      width: 560px;
+      max-height: 82vh;
+      display: flex;
+      flex-direction: column;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: 0 32px 80px rgba(20,20,18,0.22), 0 4px 16px rgba(20,20,18,0.1);
+      animation: cardSlideUp 0.25s cubic-bezier(.4,0,.2,1) both;
+    }
+    .modal-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .modal-body {
+      padding: 1.25rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-mid);
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .modal-close:hover { background: var(--black); color: #fff; border-color: var(--black); }
+
+    /* Posts column layout */
+    .posts-main-col {
+      grid-column: 2;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Post count chip */
+    .post-count-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: rgba(20,20,18,0.06);
+      padding: 0.2rem 0.6rem;
+      border-radius: 100px;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    if (sessionStorage.getItem('kl-auth') !== '1') window.location.href = 'index.html';
+  </script>
+
+  <div class="dashboard">
+
+    <!-- ── Navbar ── -->
+    <nav class="navbar">
+      <img src="assets/img/logo.png" alt="Kuroko Labs" class="navbar-logo" />
+      <div class="navbar-nav">
+        <a href="dashboard.html">Kalender</a>
+        <a href="posts.html" class="active">Posts</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="settings.html">Ops</a>
+      </div>
+      <div class="navbar-right">
+        <div class="navbar-user" onclick="logout()">
+          <div class="navbar-avatar">A</div>
+          <span>Admin</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Plattform</div>
+        <div class="platform-filter">
+          <div class="platform-item active" data-platform="all" onclick="setFilter('all', this)">
+            <div style="width:8px;height:8px;background:var(--border);border-radius:2px;flex-shrink:0;"></div>
+            <span class="platform-name">Alle</span>
+          </div>
+          <div class="platform-item" data-platform="linkedin" onclick="setFilter('linkedin', this)">
+            <div class="platform-dot linkedin"></div>
+            <span class="platform-name">LinkedIn</span>
+          </div>
+          <div class="platform-item" data-platform="twitter" onclick="setFilter('twitter', this)">
+            <div class="platform-dot twitter"></div>
+            <span class="platform-name">X / Twitter</span>
+          </div>
+          <div class="platform-item" data-platform="instagram" onclick="setFilter('instagram', this)">
+            <div class="platform-dot instagram"></div>
+            <span class="platform-name">Instagram</span>
+          </div>
+          <div class="platform-item" data-platform="threads" onclick="setFilter('threads', this)">
+            <div class="platform-dot threads"></div>
+            <span class="platform-name">Threads</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Status</div>
+        <div class="platform-filter">
+          <div class="platform-item" data-status="pending" onclick="setStatusFilter('pending', this)">
+            <span class="status-dot pending" style="width:8px;height:8px;border-radius:50%;border:1.5px solid var(--text-muted);flex-shrink:0;"></span>
+            <span class="platform-name">Ausstehend</span>
+          </div>
+          <div class="platform-item" data-status="scheduled" onclick="setStatusFilter('scheduled', this)">
+            <span class="status-dot scheduled" style="width:8px;height:8px;border-radius:50%;flex-shrink:0;"></span>
+            <span class="platform-name">Geplant</span>
+          </div>
+          <div class="platform-item" data-status="published" onclick="setStatusFilter('published', this)">
+            <span class="status-dot published" style="width:8px;height:8px;border-radius:50%;flex-shrink:0;"></span>
+            <span class="platform-name">Veröffentlicht</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Phase 2</div>
+        <div class="platform-filter">
+          <div class="platform-item" data-feature="longform" onclick="setFeatureFilter('longform', this)">
+            <span class="feature-tag longform" style="font-size:7px;padding:.08rem .3rem;">LF</span>
+            <span class="platform-name">Longform</span>
+            <span class="platform-count" id="count-feat-longform">—</span>
+          </div>
+          <div class="platform-item" data-feature="evergreen" onclick="setFeatureFilter('evergreen', this)">
+            <span class="feature-tag evergreen" style="font-size:7px;padding:.08rem .3rem;">↺</span>
+            <span class="platform-name">Evergreen</span>
+            <span class="platform-count" id="count-feat-evergreen">—</span>
+          </div>
+          <div class="platform-item" data-feature="repurposed" onclick="setFeatureFilter('repurposed', this)">
+            <span class="feature-tag repurposed" style="font-size:7px;padding:.08rem .3rem;">↳</span>
+            <span class="platform-name">Repurposed</span>
+            <span class="platform-count" id="count-feat-repurposed">—</span>
+          </div>
+          <div class="platform-item" data-feature="carousel" onclick="setFeatureFilter('carousel', this)">
+            <span class="feature-tag carousel" style="font-size:7px;padding:.08rem .3rem;">▣</span>
+            <span class="platform-name">Carousel</span>
+            <span class="platform-count" id="count-feat-carousel">—</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Posts main area ── -->
+    <div class="posts-main-col">
+      <div class="page-content" style="flex:1;overflow-y:auto;">
+        <div class="page-title-row">
+          <span class="heading-lg">Posts — März 2026</span>
+          <span class="post-count-chip" id="post-count"></span>
+        </div>
+
+        <table class="posts-table" id="posts-table">
+          <thead>
+            <tr>
+              <th>Plattform</th>
+              <th>Typ</th>
+              <th>Tags</th>
+              <th>Geplant</th>
+              <th>Status</th>
+              <th>Score</th>
+              <th>Engagement</th>
+              <th style="min-width:180px;">Vorschau</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="posts-tbody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /dashboard -->
+
+  <!-- ── Post modal ── -->
+  <div id="post-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div id="modal-platform-badge" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;"></div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="assets/js/demo-data.js"></script>
+  <script>
+    let currentFilter = 'all';
+    let currentStatus = 'all';
+    let currentFeature = 'all';
+
+    function setFilter(platform, el) {
+      currentFilter = platform;
+      document.querySelectorAll('[data-platform]').forEach(e => e.classList.remove('active'));
+      el.classList.add('active');
+      renderTable();
+    }
+
+    function setStatusFilter(status, el) {
+      currentStatus = currentStatus === status ? 'all' : status;
+      document.querySelectorAll('[data-status]').forEach(e => e.classList.remove('active'));
+      if (currentStatus !== 'all') el.classList.add('active');
+      renderTable();
+    }
+
+    function setFeatureFilter(feature, el) {
+      currentFeature = currentFeature === feature ? 'all' : feature;
+      document.querySelectorAll('[data-feature]').forEach(e => e.classList.remove('active'));
+      if (currentFeature !== 'all') el.classList.add('active');
+      renderTable();
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function fmtDate(iso) {
+      const d = new Date(iso);
+      const pad = n => String(n).padStart(2,'0');
+      return `${pad(d.getDate())}.${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function fmtBig(n) {
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+      return String(n);
+    }
+
+    function featureTags(p) {
+      return [
+        p.is_longform ? '<span class="feature-tag longform" style="font-size:7px;padding:.06rem .3rem;">LF</span>' : '',
+        p.is_evergreen ? '<span class="feature-tag evergreen" style="font-size:7px;padding:.06rem .3rem;">↺</span>' : '',
+        p.is_repurposed ? '<span class="feature-tag repurposed" style="font-size:7px;padding:.06rem .3rem;">↳</span>' : '',
+        p.carousel_pdf_path ? '<span class="feature-tag carousel" style="font-size:7px;padding:.06rem .3rem;">▣</span>' : '',
+      ].filter(Boolean).join(' ');
+    }
+
+    function renderTable() {
+      let posts = [...DEMO_POSTS];
+      if (currentFilter !== 'all') posts = posts.filter(p => p.platform === currentFilter);
+      if (currentStatus !== 'all') posts = posts.filter(p => p.status === currentStatus);
+      if (currentFeature === 'longform')   posts = posts.filter(p => p.is_longform);
+      if (currentFeature === 'evergreen')  posts = posts.filter(p => p.is_evergreen);
+      if (currentFeature === 'repurposed') posts = posts.filter(p => p.is_repurposed);
+      if (currentFeature === 'carousel')   posts = posts.filter(p => p.carousel_pdf_path);
+      posts.sort((a,b) => new Date(a.scheduled_at) - new Date(b.scheduled_at));
+
+      const tbody = document.getElementById('posts-tbody');
+      const countEl = document.getElementById('post-count');
+      countEl.textContent = `${posts.length} Posts`;
+
+      // Update feature counts
+      document.getElementById('count-feat-longform').textContent   = DEMO_POSTS.filter(p => p.is_longform).length;
+      document.getElementById('count-feat-evergreen').textContent  = DEMO_POSTS.filter(p => p.is_evergreen).length;
+      document.getElementById('count-feat-repurposed').textContent = DEMO_POSTS.filter(p => p.is_repurposed).length;
+      document.getElementById('count-feat-carousel').textContent   = DEMO_POSTS.filter(p => p.carousel_pdf_path).length;
+
+      tbody.innerHTML = posts.map((p, idx) => {
+        const engHtml = p.status === 'published'
+          ? `<div class="engagement-mini">
+               <span>♥ ${p.likes}</span>
+               <span>↗ ${fmtBig(p.reach)}</span>
+             </div>`
+          : `<span style="color:var(--border);font-family:'JetBrains Mono',monospace;font-size:10px;">—</span>`;
+
+        return `
+        <tr style="animation: revealUp 0.25s ${idx * 0.02}s ease both;">
+          <td><span class="platform-badge ${p.platform}">${PLATFORM_SHORT[p.platform]}</span></td>
+          <td style="color:var(--text-mid);font-size:11px;">${p.post_type}</td>
+          <td style="white-space:nowrap;">${featureTags(p) || '—'}</td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap;color:var(--text-mid);">${fmtDate(p.scheduled_at)}</td>
+          <td><span class="status-badge ${p.status}">${p.status}</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:var(--text-primary);">${p.quality_score.toFixed(1)}</td>
+          <td>${engHtml}</td>
+          <td style="color:var(--text-mid);font-size:11px;max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${escHtml(p.content.substring(0,60))}…</td>
+          <td>
+            <div style="display:flex;gap:4px;">
+              <button class="btn" style="padding:0.28rem 0.6rem;font-size:9px;" onclick="showPost(${p.id})">Detail</button>
+              ${p.status === 'pending' ? `<button class="btn primary" style="padding:0.28rem 0.6rem;font-size:9px;" onclick="approvePost(${p.id})">Freigeben</button>` : ''}
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function showPost(id) {
+      const post = DEMO_POSTS.find(p => p.id === id);
+      if (!post) return;
+      const modal = document.getElementById('post-modal');
+      const badge = document.getElementById('modal-platform-badge');
+      const body  = document.getElementById('modal-body');
+
+      const tags = [
+        post.is_longform ? '<span class="feature-tag longform">Longform</span>' : '',
+        post.is_evergreen ? '<span class="feature-tag evergreen">Evergreen ↺</span>' : '',
+        post.is_repurposed ? '<span class="feature-tag repurposed">Repurposed ↳</span>' : '',
+        post.carousel_pdf_path ? '<span class="feature-tag carousel">▣ Carousel</span>' : '',
+      ].filter(Boolean).join('');
+
+      badge.innerHTML = `<span class="platform-badge ${post.platform}">${PLATFORM_LABELS[post.platform]}</span> <span class="status-badge ${post.status}">${post.status}</span> ${tags}`;
+
+      const wordCount = post.content.trim().split(/\s+/).length;
+      const fmtFull = (iso) => {
+        const d = new Date(iso);
+        const pad = n => String(n).padStart(2,'0');
+        return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())} Uhr`;
+      };
+
+      const maxLikes = Math.max(...DEMO_POSTS.filter(p => p.platform === post.platform).map(p => p.likes), 1);
+      const engHtml = post.status === 'published' ? `
+        <div style="margin-bottom:1.25rem;">
+          <div class="label" style="margin-bottom:0.6rem;">Engagement</div>
+          <div class="metrics-grid" style="grid-template-columns:repeat(5,1fr);">
+            ${[
+              {label:'Likes', val:post.likes, cls:'likes', max:maxLikes},
+              {label:'Comments', val:post.comments, cls:'comments', max:Math.max(1,Math.round(maxLikes*0.12))},
+              {label:'Shares', val:post.shares, cls:'shares', max:Math.max(1,Math.round(maxLikes*0.08))},
+              {label:'Reach', val:fmtBig(post.reach), cls:'reach', raw:post.reach, max:maxLikes*18},
+              {label:'Impr.', val:fmtBig(post.impressions), cls:'', raw:post.impressions, max:maxLikes*30},
+            ].map(m => `<div class="metric-item">
+              <div class="metric-label">${m.label}</div>
+              <div class="metric-value" style="font-size:14px;">${m.val}</div>
+              <div class="metric-bar-wrap"><div class="metric-bar-fill ${m.cls}" style="width:${Math.min(100,Math.round(((m.raw !== undefined ? m.raw : (typeof m.val==='number'?m.val:0))/m.max)*100))}%"></div></div>
+            </div>`).join('')}
+          </div>
+        </div>` : '';
+
+      const carouselHtml = post.carousel_pdf_path ? `
+        <div style="margin-top:1.25rem;">
+          <div class="label" style="margin-bottom:0.45rem;">Carousel PDF</div>
+          <div class="carousel-section">
+            <div class="carousel-icon">▣</div>
+            <div class="carousel-info">
+              <div style="font-size:11px;font-weight:600;">10 Slides · 1080×1080px · B&W</div>
+              <div class="carousel-path">${post.carousel_pdf_path}</div>
+            </div>
+            <button class="btn" style="padding:.3rem .6rem;font-size:9px;" onclick="showToast('PDF-Download würde hier starten.')">↓ PDF</button>
+          </div>
+        </div>` : (post.platform === 'linkedin' ? `
+        <div style="margin-top:1.25rem;">
+          <button class="btn" style="font-size:9px;padding:.3rem .7rem;" onclick="genCarouselFromModal(${post.id})">▣ Carousel generieren</button>
+        </div>` : '');
+
+      const repurposedHtml = post.is_repurposed ? `
+        <div class="repurposed-banner" style="margin-bottom:1rem;">
+          ↳ Repurposed von LinkedIn-Post #${post.repurposed_from_id} via Claude Haiku
+        </div>` : '';
+
+      body.innerHTML = `
+        ${repurposedHtml}
+        <div style="display:flex;gap:1.5rem;margin-bottom:1.25rem;flex-wrap:wrap;">
+          <div class="meta-item">
+            <span class="meta-item-label">Typ</span>
+            <span class="meta-item-value">${post.post_type}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-item-label">Geplant</span>
+            <span class="meta-item-value">${fmtFull(post.scheduled_at)}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-item-label">Wörter</span>
+            <span class="meta-item-value">${wordCount}${post.is_longform?' ✦':''}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-item-label">Score</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;line-height:1;color:var(--text-primary);">${post.quality_score.toFixed(1)}</span>
+          </div>
+        </div>
+        ${engHtml}
+        <div class="label" style="margin-bottom:0.45rem;">Inhalt</div>
+        <div class="post-content-box" style="max-height:240px;">${escHtml(post.content)}</div>
+        ${post.image_path ? `
+          <div style="margin-top:1.25rem;">
+            <div class="label" style="margin-bottom:0.45rem;">Bild (Gemini Imagen · SW Industrial 1080×1080)</div>
+            <div class="post-img-preview">
+              <div class="post-img-placeholder">Bildvorschau<br>1080 × 1080 px</div>
+            </div>
+          </div>` : ''}
+        ${carouselHtml}
+        ${post.status === 'pending' ? `
+          <div style="margin-top:1.25rem;">
+            <button class="btn primary" onclick="approvePost(${post.id}); closeModal();">Post freigeben</button>
+          </div>` : ''}
+      `;
+
+      modal.classList.add('open');
+    }
+
+    function genCarouselFromModal(id) {
+      showToast('Carousel-Generierung gestartet — 10 Slides, 1080×1080px…');
+      const post = DEMO_POSTS.find(p => p.id === id);
+      if (post) {
+        setTimeout(() => {
+          post.carousel_pdf_path = `output/carousels/${post.post_type}_demo.pdf`;
+          closeModal();
+          showPost(id);
+          showToast('✓ Carousel PDF bereit');
+          renderTable();
+        }, 2200);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('post-modal').classList.remove('open');
+    }
+
+    function approvePost(id) {
+      const p = DEMO_POSTS.find(x => x.id === id);
+      if (p) { p.status = 'scheduled'; renderTable(); }
+      showToast('Post freigegeben.');
+    }
+
+    function showToast(msg) {
+      let t = document.getElementById('toast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'toast';
+        t.style.cssText = `
+          position:fixed;bottom:1.75rem;left:50%;transform:translateX(-50%);
+          background:var(--black);color:#fff;padding:.65rem 1.25rem;
+          font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+          border-radius:6px;z-index:1000;opacity:0;transition:opacity .22s;
+          pointer-events:none;white-space:nowrap;
+          box-shadow:0 4px 20px rgba(20,20,18,0.25);
+        `;
+        document.body.appendChild(t);
+      }
+      t.textContent = msg; t.style.opacity = '1';
+      setTimeout(() => t.style.opacity = '0', 2600);
+    }
+
+    function logout() {
+      sessionStorage.removeItem('kl-auth');
+      window.location.href = 'index.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', renderTable);
+
+    document.getElementById('post-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Alerts — Kuroko Labs{% endblock %}
+{% block content %}
+<div class="flex gap-2" style="align-items:flex-start;margin-top:1.5rem;">
+
+  <!-- Sidebar filter -->
+  <aside style="width:200px;flex-shrink:0;">
+    <div style="font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#999;margin-bottom:.75rem;">Filter</div>
+    <nav style="display:flex;flex-direction:column;gap:.25rem;">
+      <a href="/alerts"
+         style="display:block;padding:.45rem .75rem;border-radius:4px;font-size:.82rem;text-decoration:none;
+                background:{% if not request.query_params.get('type') %}#000{% else %}transparent{% endif %};
+                color:{% if not request.query_params.get('type') %}#fff{% else %}#333{% endif %};">
+        Alle
+      </a>
+      {% for type_key, type_label in [
+          ('new_model',       'New Model'),
+          ('benchmark',       'Benchmark'),
+          ('rag_architecture','RAG Architecture'),
+          ('research_paper',  'Research Paper'),
+          ('other',           'Sonstige'),
+      ] %}
+      <a href="/alerts?type={{ type_key }}"
+         style="display:block;padding:.45rem .75rem;border-radius:4px;font-size:.82rem;text-decoration:none;
+                background:{% if request.query_params.get('type') == type_key %}#000{% else %}transparent{% endif %};
+                color:{% if request.query_params.get('type') == type_key %}#fff{% else %}#333{% endif %};">
+        {{ type_label }}
+      </a>
+      {% endfor %}
+    </nav>
+
+    <div style="margin-top:1.5rem;">
+      <form hx-post="/alerts/check-now" hx-target="#check-result" hx-swap="innerHTML">
+        <button class="btn btn-sm" type="submit" style="width:100%;">Jetzt prüfen</button>
+      </form>
+      <div id="check-result" style="margin-top:.5rem;font-size:.8rem;color:#555;"></div>
+    </div>
+  </aside>
+
+  <!-- Main alerts list -->
+  <div style="flex:1;min-width:0;">
+    <div class="flex items-center justify-between" style="margin-bottom:1rem;">
+      <h2 style="font-size:1rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;">
+        Breaking AI News
+      </h2>
+      <span style="font-size:.8rem;color:#999;">
+        <span hx-get="/alerts/count" hx-trigger="load, every 60s" hx-swap="innerHTML"
+              style="font-weight:700;"></span>
+      </span>
+    </div>
+
+    {% if alerts %}
+      {% for alert in alerts %}
+      <div id="alert-{{ alert.id }}"
+           style="border:1px solid #e0e0e0;border-radius:6px;padding:1rem 1.25rem;margin-bottom:.75rem;
+                  {% if alert.priority == 2 %}border-left:4px solid #d32f2f;{% elif alert.priority == 1 %}border-left:4px solid #f57c00;{% else %}border-left:4px solid #bbb;{% endif %}">
+
+        <!-- Top row: badges + time -->
+        <div class="flex items-center gap-1" style="margin-bottom:.5rem;flex-wrap:wrap;">
+          {% if alert.priority == 2 %}
+            <span style="background:#d32f2f;color:#fff;font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;">Breaking</span>
+          {% elif alert.priority == 1 %}
+            <span style="background:#f57c00;color:#fff;font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;">High</span>
+          {% else %}
+            <span style="background:#e0e0e0;color:#555;font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;">Normal</span>
+          {% endif %}
+
+          {% set type_labels = {
+              'new_model':       'New Model',
+              'benchmark':       'Benchmark',
+              'rag_architecture':'RAG Architecture',
+              'research_paper':  'Research Paper',
+              'other':           'Other',
+          } %}
+          <span style="background:#f4f4f4;color:#444;font-size:.68rem;padding:.15rem .5rem;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;">
+            {{ type_labels.get(alert.alert_type, alert.alert_type) }}
+          </span>
+
+          <code style="font-size:.72rem;color:#888;margin-left:.25rem;">{{ alert.source }}</code>
+
+          <span style="margin-left:auto;font-size:.75rem;color:#aaa;">{{ alert.created_at }}</span>
+        </div>
+
+        <!-- Title -->
+        <a href="{{ alert.url }}" target="_blank" rel="noopener noreferrer"
+           style="font-weight:700;font-size:.95rem;color:#000;text-decoration:none;display:block;margin-bottom:.35rem;line-height:1.35;">
+          {{ alert.title }}
+        </a>
+
+        <!-- Summary -->
+        {% if alert.summary %}
+        <p style="font-size:.82rem;color:#555;line-height:1.5;margin-bottom:.6rem;
+                  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">
+          {{ alert.summary }}
+        </p>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="flex gap-1">
+          <button
+            hx-post="/alerts/{{ alert.id }}/read"
+            hx-target="#alert-{{ alert.id }}"
+            hx-swap="outerHTML"
+            class="btn btn-sm">
+            Als gelesen markieren
+          </button>
+          <button
+            hx-post="/alerts/{{ alert.id }}/dismiss"
+            hx-target="#alert-{{ alert.id }}"
+            hx-swap="outerHTML"
+            class="btn btn-sm"
+            style="color:#999;">
+            Verwerfen
+          </button>
+        </div>
+
+      </div>
+      {% endfor %}
+
+    {% else %}
+      <div style="padding:3rem 2rem;text-align:center;color:#aaa;border:1px dashed #e0e0e0;border-radius:6px;">
+        <div style="font-size:2rem;margin-bottom:.75rem;">&#10003;</div>
+        <div style="font-weight:700;margin-bottom:.4rem;">Keine ungelesenen Alerts</div>
+        <div style="font-size:.85rem;">Klicke auf "Jetzt prüfen" um neue Quellen abzufragen.</div>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+  // Replace check-now result with human-friendly message
+  document.body.addEventListener('htmx:afterRequest', function(evt) {
+    if (evt.detail.pathInfo && evt.detail.pathInfo.requestPath === '/alerts/check-now') {
+      try {
+        var data = JSON.parse(evt.detail.xhr.responseText);
+        var el = document.getElementById('check-result');
+        if (el) {
+          el.textContent = data.new_alerts === 0
+            ? 'Keine neuen Alerts.'
+            : data.new_alerts + ' neue Alert(s) gefunden.';
+        }
+      } catch(e) {}
+    }
+  });
+</script>
+{% endblock %}

@@ -1,4 +1,4 @@
-"""Base scraper with rate limiting, robots.txt, retry, and HTML extraction."""
+"""Base scraper with rate limiting, robots.txt, retry, HTML extraction, and SSRF protection."""
 import random
 import re
 import threading
@@ -11,6 +11,9 @@ from bs4 import BeautifulSoup
 
 from security.rate_limiter import RateLimiter
 from security.audit_log import audit_log
+from security.input_validator import is_safe_url
+
+_MAX_RESPONSE_BYTES = 5 * 1024 * 1024  # 5 MB
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
@@ -56,7 +59,11 @@ class BaseScraper:
             raise ScraperBlockedError(f"robots.txt blocks: {url}")
 
     def fetch(self, url: str) -> str:
-        """Fetch URL with rate limiting, user-agent rotation, retries."""
+        """Fetch URL with SSRF protection, rate limiting, user-agent rotation, retries."""
+        # SSRF protection: block private IPs, localhost, dangerous schemes
+        if not is_safe_url(url):
+            raise ScraperBlockedError(f"SSRF blocked: {url}")
+
         domain = urlparse(url).netloc
         _rate_limiter.wait(domain)
         self._check_robots(url)
@@ -71,6 +78,13 @@ class BaseScraper:
                     time.sleep(wait)
                     continue
                 resp.raise_for_status()
+                # Enforce max response size
+                content_bytes = resp.content
+                if len(content_bytes) > _MAX_RESPONSE_BYTES:
+                    raise RuntimeError(
+                        f"Response from {url} exceeds maximum size "
+                        f"({len(content_bytes)} bytes > {_MAX_RESPONSE_BYTES})"
+                    )
                 audit_log.log(self.SOURCE, url, 0, 0, 0.0, "success")
                 return resp.text
             except ScraperBlockedError:

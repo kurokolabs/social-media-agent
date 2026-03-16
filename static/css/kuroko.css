@@ -1,0 +1,718 @@
+/* Kuroko Labs — Dashboard Stylesheet — Phase 2 */
+/* Brand: black / white, Arial Bold, clean industrial */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #000000;
+  --white: #ffffff;
+  --gray-50:  #fafafa;
+  --gray-100: #f4f4f4;
+  --gray-200: #e2e2e2;
+  --gray-300: #c8c8c8;
+  --gray-400: #999999;
+  --gray-600: #555555;
+  --gray-800: #333333;
+
+  /* Platform colours (greyscale brand) */
+  --color-linkedin:  #000000;
+  --color-twitter:   #333333;
+  --color-instagram: #555555;
+  --color-threads:   #888888;
+
+  /* Phase 2 feature indicators */
+  --color-evergreen:  #000;
+  --color-repurposed: #444;
+  --color-longform:   #000;
+
+  /* Mono font for data */
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+  --font-ui:   Arial, Helvetica, sans-serif;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: var(--white);
+  color: var(--black);
+  min-height: 100vh;
+  /* Subtle dot grid — industrial graph paper feel */
+  background-image: radial-gradient(circle, #ddd 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-attachment: fixed;
+}
+
+/* ── Header ── */
+header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 2rem;
+  border-bottom: 2px solid var(--black);
+  background: var(--black);
+  color: var(--white);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  color: var(--white);
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.logo-kanji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.logo span { color: var(--gray-400); font-size: 0.9rem; letter-spacing: 0.14em; }
+
+nav { margin-left: auto; display: flex; gap: 0.25rem; }
+
+nav a {
+  color: var(--gray-400);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+nav a:hover { color: var(--white); border-color: var(--gray-600); }
+nav a.active { color: var(--white); border-color: var(--gray-400); }
+
+/* ── Layout ── */
+.container { max-width: 1440px; margin: 0 auto; padding: 2rem; }
+
+.layout-split {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* ── Cards ── */
+.card {
+  border: 1.5px solid var(--black);
+  padding: 1.5rem;
+  background: var(--white);
+  position: relative;
+}
+
+/* Thin accent line at top of every card */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--black);
+}
+
+.card-title {
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--gray-400);
+  margin-bottom: 1.25rem;
+}
+
+/* ── Platform badges ── */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--white);
+  font-family: var(--font-mono);
+}
+
+.badge-linkedin   { background: var(--color-linkedin); }
+.badge-twitter    { background: var(--color-twitter); }
+.badge-instagram  { background: var(--color-instagram); }
+.badge-threads    { background: var(--color-threads); }
+
+/* ── Phase 2 feature tags ── */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-family: var(--font-mono);
+  vertical-align: middle;
+}
+
+/* Evergreen: hatched background — "returning content" */
+.tag-evergreen {
+  color: var(--black);
+  border: 1.5px solid var(--black);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.1) 3px,
+    rgba(0,0,0,0.1) 4px
+  );
+}
+
+/* Repurposed: dashed border */
+.tag-repurposed {
+  color: var(--gray-600);
+  border: 1.5px dashed var(--gray-400);
+}
+
+/* Longform: double border — content depth */
+.tag-longform {
+  color: var(--black);
+  border: 1.5px solid var(--black);
+  outline: 1.5px solid var(--black);
+  outline-offset: 2px;
+}
+
+/* Carousel: solid fill */
+.tag-carousel {
+  color: var(--white);
+  background: var(--black);
+  border: 1.5px solid var(--black);
+}
+
+/* ── Status badges ── */
+.status {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: 1.5px solid currentColor;
+  font-family: var(--font-mono);
+}
+
+.status-pending   { color: var(--gray-400); }
+.status-approved  { color: var(--black); }
+.status-scheduled { color: var(--gray-800); background: var(--gray-100); }
+.status-published { background: var(--black); color: var(--white); border-color: var(--black); }
+.status-failed    { color: #c00; border-color: #c00; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-block;
+  padding: 0.45rem 1.1rem;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: 1.5px solid var(--black);
+  background: var(--white);
+  color: var(--black);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+}
+
+.btn:hover  { background: var(--black); color: var(--white); }
+.btn-solid  { background: var(--black); color: var(--white); }
+.btn-solid:hover { background: var(--gray-800); border-color: var(--gray-800); }
+.btn-ghost  { border-color: var(--gray-300); color: var(--gray-600); }
+.btn-ghost:hover { background: var(--gray-100); color: var(--black); }
+.btn-danger { border-color: #c00; color: #c00; }
+.btn-danger:hover { background: #c00; color: var(--white); }
+.btn-sm     { padding: 0.28rem 0.75rem; font-size: 0.68rem; }
+
+/* ── Forms ── */
+input, textarea, select {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  border: 1.5px solid var(--black);
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  background: var(--white);
+  color: var(--black);
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--gray-600);
+  background: var(--gray-50);
+}
+
+textarea { resize: vertical; min-height: 120px; }
+
+label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray-600);
+  margin-bottom: 0.35rem;
+}
+
+.form-group { margin-bottom: 1rem; }
+
+/* ── Toggle ── */
+.toggle-wrap { display: flex; align-items: center; gap: 0.75rem; }
+
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.toggle input { display: none; }
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--gray-200);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; top: 3px;
+  background: var(--white);
+  border: 1.5px solid var(--gray-400);
+  transition: transform 0.2s;
+}
+
+.toggle input:checked + .toggle-slider { background: var(--black); }
+.toggle input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+  border-color: var(--gray-600);
+}
+
+/* ── Chat window ── */
+.chat-window {
+  border: 1.5px solid var(--black);
+  display: flex;
+  flex-direction: column;
+  height: 320px;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chat-msg {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.83rem;
+  max-width: 85%;
+  border: 1.5px solid var(--gray-200);
+}
+
+.chat-msg.user      { align-self: flex-end; border-color: var(--black); background: var(--black); color: var(--white); }
+.chat-msg.assistant { align-self: flex-start; background: var(--gray-100); }
+
+.chat-input-row {
+  display: flex;
+  border-top: 1.5px solid var(--black);
+}
+
+.chat-input-row input {
+  border: none;
+  border-right: 1.5px solid var(--black);
+  flex: 1;
+}
+
+.chat-input-row button {
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--black);
+  color: var(--white);
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── FullCalendar overrides ── */
+.fc .fc-toolbar-title {
+  font-size: 0.9rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.fc .fc-button {
+  background: var(--white) !important;
+  border: 1.5px solid var(--black) !important;
+  color: var(--black) !important;
+  font-weight: 700 !important;
+  font-size: 0.72rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: 0 !important;
+}
+.fc .fc-button:hover { background: var(--black) !important; color: var(--white) !important; }
+.fc .fc-daygrid-event {
+  font-size: 0.66rem;
+  border-radius: 0;
+  border: none;
+  padding: 1px 4px;
+  font-family: var(--font-mono);
+}
+.fc .fc-event-title { font-weight: 600; }
+.fc td, .fc th { border-color: var(--gray-200) !important; }
+.fc .fc-day-today { background: var(--gray-50) !important; }
+
+/* ── Post content ── */
+.post-content {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  border: 1.5px solid var(--gray-200);
+  padding: 1rem;
+  background: var(--gray-50);
+  min-height: 80px;
+}
+
+.post-image img {
+  max-width: 100%;
+  border: 1.5px solid var(--black);
+  display: block;
+}
+
+/* ── Quality score ── */
+.quality-score {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.quality-score small {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--gray-400);
+  font-family: var(--font-ui);
+}
+
+/* ── Engagement metrics (Phase 2 / Feature 5) ── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  border: 1.5px solid var(--black);
+  margin-top: 1rem;
+}
+
+.metric-cell {
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  border-right: 1px solid var(--gray-200);
+  position: relative;
+}
+.metric-cell:last-child { border-right: none; }
+
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1;
+  display: block;
+  letter-spacing: -0.02em;
+}
+
+.metric-label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gray-400);
+  display: block;
+  margin-top: 0.25rem;
+}
+
+/* Engagement bar under each metric cell */
+.metric-bar {
+  position: absolute;
+  bottom: 0; left: 0;
+  height: 2px;
+  background: var(--black);
+  transition: width 0.4s ease;
+}
+
+/* Mini engagement sparkline for table rows */
+.engagement-mini {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--gray-600);
+  white-space: nowrap;
+}
+
+.engagement-mini .eng-bar {
+  display: inline-block;
+  width: 24px;
+  height: 4px;
+  background: var(--gray-200);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.engagement-mini .eng-bar-fill {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  background: var(--black);
+  transition: width 0.3s;
+}
+
+/* ── Carousel PDF section ── */
+.carousel-section {
+  border: 1.5px solid var(--black);
+  background: var(--gray-50);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.carousel-icon {
+  width: 40px;
+  height: 40px;
+  border: 1.5px solid var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.carousel-path {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--gray-600);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Repurposed from banner ── */
+.repurposed-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.85rem;
+  background: var(--gray-100);
+  border: 1.5px dashed var(--gray-300);
+  font-size: 0.75rem;
+  color: var(--gray-600);
+  margin-top: 0.75rem;
+}
+
+.repurposed-banner a {
+  color: var(--black);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.repurposed-banner a:hover { text-decoration: underline; }
+
+/* ── Ops panel (Settings Phase 2) ── */
+.ops-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--black);
+  border: 1.5px solid var(--black);
+  margin-top: 1rem;
+}
+
+.ops-cell {
+  background: var(--white);
+  padding: 1rem;
+}
+
+.ops-cell-label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gray-400);
+  margin-bottom: 0.35rem;
+}
+
+.ops-cell-desc {
+  font-size: 0.78rem;
+  color: var(--gray-600);
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+/* ── Posts table — Phase 2 columns ── */
+.posts-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: var(--white);
+}
+
+.posts-table thead tr {
+  border-bottom: 2px solid var(--black);
+  background: var(--black);
+  color: var(--white);
+}
+
+.posts-table thead th {
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+
+.posts-table tbody tr {
+  border-bottom: 1px solid var(--gray-200);
+  transition: background 0.1s;
+}
+
+.posts-table tbody tr:hover { background: var(--gray-50); }
+
+.posts-table td {
+  padding: 0.55rem 0.75rem;
+  font-size: 0.82rem;
+  vertical-align: middle;
+}
+
+/* Row tint for special post types */
+.posts-table tr.row-longform { border-left: 3px solid var(--black); }
+.posts-table tr.row-evergreen { border-left: 3px solid var(--gray-400); }
+.posts-table tr.row-repurposed { border-left: 3px dashed var(--gray-300); }
+
+/* ── Filter tabs ── */
+.filter-tabs {
+  display: flex;
+  gap: 0;
+  border: 1.5px solid var(--black);
+  overflow: hidden;
+}
+
+.filter-tabs a {
+  display: block;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  color: var(--gray-600);
+  border-right: 1px solid var(--gray-200);
+  transition: background 0.12s, color 0.12s;
+}
+
+.filter-tabs a:last-child { border-right: none; }
+.filter-tabs a:hover { background: var(--gray-100); color: var(--black); }
+.filter-tabs a.active { background: var(--black); color: var(--white); }
+
+/* ── Webhook status pill ── */
+.webhook-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.webhook-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.webhook-dot.configured { background: var(--black); }
+.webhook-dot.missing    { background: var(--gray-300); }
+
+/* ── Page heading ── */
+.page-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--black);
+}
+
+.page-heading h1 {
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.page-heading .heading-meta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--gray-400);
+}
+
+/* ── Utility ── */
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.flex { display: flex; }
+.gap-1 { gap: 0.5rem; }
+.gap-2 { gap: 1rem; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.text-muted { color: var(--gray-400); font-size: 0.8rem; }
+.text-sm { font-size: 0.82rem; }
+.w-full { width: 100%; }
+.mono { font-family: var(--font-mono); }
+hr { border: none; border-top: 1.5px solid var(--gray-200); margin: 1rem 0; }
+code { font-family: var(--font-mono); font-size: 0.83em; background: var(--gray-100); padding: 0.1em 0.35em; }
+
+/* ── HTMX loading indicator ── */
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator { display: inline; }
+.htmx-request.htmx-indicator { display: inline; }
+
+/* Spinner */
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid var(--gray-200);
+  border-top-color: var(--black);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

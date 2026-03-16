@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Kalender — Kuroko Labs{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js" defer></script>
+<script src="/static/js/calendar.js" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="layout-split mt-2">
+
+  <!-- Calendar column -->
+  <div>
+    <div class="card">
+      <div class="card-title">Posting-Kalender</div>
+      <div id="calendar"></div>
+
+      <!-- Platform legend with Phase 2 indicators -->
+      <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:1.25rem;padding-top:.75rem;border-top:1px solid var(--gray-200);">
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <span class="badge badge-linkedin">LinkedIn</span>
+          <span class="badge badge-twitter">X / Twitter</span>
+          <span class="badge badge-instagram">Instagram</span>
+          <span class="badge badge-threads">Threads</span>
+        </div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-left:auto;">
+          <span class="tag tag-longform">LF = Long-form</span>
+          <span class="tag tag-evergreen">↺ EG = Evergreen</span>
+          <span class="tag tag-repurposed">↳ = Repurposed</span>
+          <span class="tag tag-carousel">PDF = Carousel</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick stats row (Phase 2) -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--black);border:1.5px solid var(--black);margin-top:1rem;">
+      {% for platform, label in [('linkedin','LinkedIn'),('twitter','X / Twitter'),('instagram','Instagram'),('threads','Threads')] %}
+      <div style="background:var(--white);padding:.75rem;text-align:center;">
+        <div class="mono" style="font-size:1.5rem;font-weight:500;" id="stat-{{ platform }}">—</div>
+        <div style="font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--gray-400);margin-top:.2rem;">
+          {{ label }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Detail panel -->
+  <div id="post-detail-panel">
+    <div class="card">
+      <div class="card-title">Post-Detail</div>
+      <p class="text-muted" style="font-size:.82rem;">
+        Klicke auf einen Kalender-Eintrag um Details, Engagement-Daten und Agent-Edit zu sehen.
+      </p>
+      <div style="margin-top:1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+        <div style="border:1px dashed var(--gray-200);padding:.75rem;text-align:center;">
+          <div style="font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--gray-300);">Freigeben</div>
+        </div>
+        <div style="border:1px dashed var(--gray-200);padding:.75rem;text-align:center;">
+          <div style="font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--gray-300);">Agent-Edit</div>
+        </div>
+        <div style="border:1px dashed var(--gray-200);padding:.75rem;text-align:center;">
+          <div style="font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--gray-300);">Engagement</div>
+        </div>
+        <div style="border:1px dashed var(--gray-200);padding:.75rem;text-align:center;">
+          <div style="font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--gray-300);">Carousel PDF</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Load platform post counts for quick stats
+document.addEventListener('DOMContentLoaded', function() {
+  const platforms = ['linkedin', 'twitter', 'instagram', 'threads'];
+  fetch('/api/calendar/events')
+    .then(r => r.json())
+    .then(events => {
+      const counts = {};
+      events.forEach(e => {
+        const p = e.extendedProps && e.extendedProps.platform;
+        if (p) counts[p] = (counts[p] || 0) + 1;
+      });
+      platforms.forEach(p => {
+        const el = document.getElementById('stat-' + p);
+        if (el) el.textContent = counts[p] || 0;
+      });
+    })
+    .catch(() => {});
+});
+</script>
+{% endblock %}

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Kuroko Labs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="/static/css/kuroko.css" />
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-image: radial-gradient(circle, #ddd 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    .login-box {
+      width: 360px;
+      background: var(--white);
+      border: 1.5px solid var(--black);
+      position: relative;
+    }
+
+    .login-box::before {
+      content: '';
+      display: block;
+      height: 4px;
+      background: var(--black);
+    }
+
+    .login-header {
+      padding: 2rem 2rem 1rem;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .login-logo {
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .login-logo .kanji { font-size: 1.6rem; }
+    .login-logo .name  { color: var(--gray-400); font-size: 0.85rem; letter-spacing: 0.15em; }
+
+    .login-sub {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gray-400);
+    }
+
+    .login-body { padding: 1.75rem 2rem 2rem; }
+
+    .login-error {
+      background: #fef0f0;
+      border: 1.5px solid #c00;
+      color: #c00;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.55rem 0.75rem;
+      margin-bottom: 1rem;
+      letter-spacing: 0.04em;
+    }
+
+    .login-warning {
+      background: var(--gray-100);
+      border: 1.5px dashed var(--gray-300);
+      color: var(--gray-600);
+      font-size: 0.75rem;
+      padding: 0.55rem 0.75rem;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .login-body input[type="password"] {
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      padding: 0.65rem 0.75rem;
+    }
+
+    .login-submit {
+      width: 100%;
+      padding: 0.7rem;
+      font-size: 0.8rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      background: var(--black);
+      color: var(--white);
+      border: none;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background 0.12s;
+    }
+
+    .login-submit:hover { background: var(--gray-800); }
+
+    .login-footer {
+      padding: 0.75rem 2rem;
+      border-top: 1px solid var(--gray-200);
+      font-size: 0.65rem;
+      color: var(--gray-400);
+      font-family: var(--font-mono);
+      letter-spacing: 0.06em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <div class="login-header">
+      <div class="login-logo">
+        <span class="kanji">黒衣</span>
+        <span class="name">KUROKO LABS</span>
+      </div>
+      <div class="login-sub">Operator Dashboard — Zugangsbeschränkt</div>
+    </div>
+
+    <div class="login-body">
+
+      {% if pw_missing %}
+      <div class="login-warning">
+        <strong>Kein Passwort konfiguriert.</strong><br>
+        Setze <code>DASHBOARD_PASSWORD</code> in <code>.env</code> bevor du das Dashboard produktiv einsetzt.
+      </div>
+      {% endif %}
+
+      {% if error %}
+      <div class="login-error">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" action="/login">
+        <input type="hidden" name="next" value="{{ next }}" />
+
+        <div class="form-group">
+          <label for="password">Passwort</label>
+          <input type="password" id="password" name="password"
+                 autofocus autocomplete="current-password"
+                 placeholder="•••••••••••••••••" />
+        </div>
+
+        <button type="submit" class="login-submit">Einloggen →</button>
+      </form>
+
+    </div>
+
+    <div class="login-footer">
+      kuroko-labs.com — Social Agent v2
+    </div>
+  </div>
+
+</body>
+</html>

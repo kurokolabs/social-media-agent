@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}Ops — Kuroko Labs{% endblock %}
+{% block content %}
+<div style="max-width:740px;margin-top:2rem;">
+
+  <div class="page-heading">
+    <h1>Operations</h1>
+    <span class="heading-meta mono">{{ current_time }}</span>
+  </div>
+
+  <!-- ── Instagram DM-Automation ── -->
+  <div class="card">
+    <div class="card-title">Instagram DM-Automation</div>
+
+    <div class="flex items-center gap-2 justify-between">
+      <div>
+        <p class="text-sm">Automatisch auf Instagram-DMs antworten (Claude-generiert).</p>
+        <p class="text-muted mt-1">Standard: <strong>OFF</strong>. Erfordert <code>IG_APP_SECRET</code> + <code>IG_WEBHOOK_VERIFY_TOKEN</code>.</p>
+      </div>
+
+      <form hx-post="/settings/dm-toggle" hx-target="#dm-status" hx-swap="innerHTML">
+        <label class="toggle">
+          <input type="checkbox" name="enabled" {% if ig_dm_enabled %}checked{% endif %}
+                 onchange="this.form.requestSubmit()">
+          <span class="toggle-slider"></span>
+        </label>
+      </form>
+    </div>
+
+    <div id="dm-status" class="mt-2">
+      {% if ig_dm_enabled %}
+        <span class="status status-published">Aktiv</span>
+      {% elif ig_configured %}
+        <span class="status status-scheduled">Konfiguriert — aktivierbar</span>
+      {% else %}
+        <span class="status status-pending">Nicht konfiguriert</span>
+        <p class="text-muted mt-1">Setze <code>IG_APP_SECRET</code> und <code>IG_WEBHOOK_VERIFY_TOKEN</code> in <code>.env</code>.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Buffer Channels ── -->
+  <div class="card mt-3">
+    <div class="card-title">Buffer Channel IDs</div>
+    <p class="text-muted text-sm">Konfiguration via <code>.env</code> auf dem Server.</p>
+    <table style="width:100%;font-size:.82rem;margin-top:.75rem;border-collapse:collapse;">
+      {% for platform, env_key, value in channels %}
+      <tr style="border-bottom:1px solid var(--gray-200);">
+        <td style="padding:.45rem .75rem .45rem 0;">
+          <span class="badge badge-{{ platform }}">{{ platform }}</span>
+        </td>
+        <td style="padding:.45rem .5rem;">
+          <code>{{ env_key }}</code>
+        </td>
+        <td style="padding:.45rem 0;">
+          {% if value %}
+            <span class="status status-published">✓ gesetzt</span>
+          {% else %}
+            <span class="status status-pending">fehlt</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+
+      <!-- Buffer Webhook (Phase 2 Feature 1) -->
+      <tr style="border-bottom:1px solid var(--gray-200);">
+        <td style="padding:.45rem .75rem .45rem 0;">
+          <span class="mono" style="font-size:.7rem;color:var(--gray-600);">WEBHOOK</span>
+        </td>
+        <td style="padding:.45rem .5rem;"><code>BUFFER_WEBHOOK_SECRET</code></td>
+        <td style="padding:.45rem 0;">
+          {% if buffer_webhook_configured %}
+            <span class="status status-published">✓ gesetzt</span>
+          {% else %}
+            <span class="status status-pending">fehlt</span>
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+
+    {% if buffer_webhook_configured %}
+    <div class="webhook-status mt-2">
+      <div class="webhook-dot configured"></div>
+      <span class="text-muted">POST <code>/webhooks/buffer</code> — Status-Sync aktiv</span>
+    </div>
+    {% else %}
+    <div class="webhook-status mt-2">
+      <div class="webhook-dot missing"></div>
+      <span class="text-muted">Buffer → Dashboard: <code>BUFFER_WEBHOOK_SECRET</code> setzen um Post-Status automatisch zu synchronisieren.</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Phase 2 Ops: Manual Triggers ── -->
+  <div class="card mt-3">
+    <div class="card-title">Phase 2 — Manuelle Ausführung</div>
+    <p class="text-muted text-sm" style="margin-bottom:.75rem;">
+      Alle Jobs laufen täglich automatisch. Hier können sie sofort ausgelöst werden.
+    </p>
+
+    <div class="ops-grid">
+
+      <!-- Weekly Batch -->
+      <div class="ops-cell">
+        <div class="ops-cell-label">Weekly-Batch</div>
+        <div class="ops-cell-desc">Posts für nächste Woche generieren (Sonntag 22:00).</div>
+        <form hx-post="/settings/run-weekly" hx-target="#result-weekly" hx-swap="innerHTML">
+          <button class="btn btn-sm" type="submit">Starten</button>
+        </form>
+        <div id="result-weekly" class="mt-1 text-sm mono"></div>
+      </div>
+
+      <!-- Analytics Sync (Feature 5) -->
+      <div class="ops-cell">
+        <div class="ops-cell-label">Analytics-Sync</div>
+        <div class="ops-cell-desc">Buffer-Engagement (Likes, Shares, Reach) für alle veröffentlichten Posts laden (tägl. 04:00).</div>
+        <form hx-post="/settings/run-analytics" hx-target="#result-analytics" hx-swap="innerHTML">
+          <button class="btn btn-sm" type="submit">Sync starten</button>
+        </form>
+        <div id="result-analytics" class="mt-1 text-sm mono"></div>
+      </div>
+
+      <!-- Repurposing (Feature 2) -->
+      <div class="ops-cell">
+        <div class="ops-cell-label">Repurposing</div>
+        <div class="ops-cell-desc">Top-LinkedIn-Posts (Score ≥ 8.5) als X-Tweet + Threads-Post umschreiben (tägl. 06:00).</div>
+        <form hx-post="/settings/run-repurposing" hx-target="#result-repurposing" hx-swap="innerHTML">
+          <button class="btn btn-sm" type="submit">Repurpose</button>
+        </form>
+        <div id="result-repurposing" class="mt-1 text-sm mono"></div>
+      </div>
+
+      <!-- Evergreen Rotation (Feature 6) -->
+      <div class="ops-cell">
+        <div class="ops-cell-label">Evergreen-Rotation</div>
+        <div class="ops-cell-desc">Posts mit ≥ 50 Likes+Shares nach 60 Tagen erneut schedulen (Mo. 07:00).</div>
+        <form hx-post="/settings/run-evergreen" hx-target="#result-evergreen" hx-swap="innerHTML">
+          <button class="btn btn-sm" type="submit">Rotieren</button>
+        </form>
+        <div id="result-evergreen" class="mt-1 text-sm mono"></div>
+      </div>
+
+      <!-- Longform (Feature 7) -->
+      <div class="ops-cell">
+        <div class="ops-cell-label">Long-form Post</div>
+        <div class="ops-cell-desc">600–800 Wörter LinkedIn-Analyse generieren (Mi. 07:30).</div>
+        <form hx-post="/settings/run-longform" hx-target="#result-longform" hx-swap="innerHTML">
+          <button class="btn btn-sm" type="submit">Generieren</button>
+        </form>
+        <div id="result-longform" class="mt-1 text-sm mono"></div>
+      </div>
+
+      <!-- Competitor Scrapers (Feature 4) -->
+      <div class="ops-cell">
+        <div class="ops-cell-label">Competitor-Scraper</div>
+        <div class="ops-cell-desc">Aleph Alpha, DeepL, SAP, Siemens, Bosch — Content-Inspiration abrufen.</div>
+        <form hx-post="/settings/run-competitors" hx-target="#result-competitors" hx-swap="innerHTML">
+          <button class="btn btn-sm" type="submit">Scrapen</button>
+        </form>
+        <div id="result-competitors" class="mt-1 text-sm mono"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Cron schedule reference ── -->
+  <div class="card mt-3">
+    <div class="card-title">Automatische Zeitpläne</div>
+    <table style="width:100%;font-size:.78rem;border-collapse:collapse;">
+      {% for time, label, detail in [
+          ('Di/Do 07:00', 'Pipeline-Job',       'Scrape → Analyze → Generate → Publish'),
+          ('So 22:00',    'Weekly-Batch',        'Alle 4 Plattformen, Mo–So'),
+          ('Tägl. 04:00', 'Analytics-Sync',      'Buffer-Engagement für published Posts'),
+          ('Tägl. 06:00', 'Repurposing',         'LinkedIn → X + Threads (Score ≥ 8.5)'),
+          ('Mo 07:00',    'Evergreen-Rotation',  'Re-schedule Posts mit ≥ 50 Likes+Shares'),
+          ('Mi 07:30',    'Long-form Post',      '1× pro Woche LinkedIn Deep-Dive'),
+      ] %}
+      <tr style="border-bottom:1px solid var(--gray-200);">
+        <td style="padding:.4rem .75rem .4rem 0;"><span class="mono" style="font-size:.72rem;">{{ time }}</span></td>
+        <td style="padding:.4rem .5rem;font-weight:700;font-size:.78rem;">{{ label }}</td>
+        <td style="padding:.4rem 0;color:var(--gray-600);">{{ detail }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+</div>
+{% endblock %}
