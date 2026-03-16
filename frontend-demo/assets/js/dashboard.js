@@ -16,7 +16,7 @@ const PLATFORM_SHORT_CAL = {
   threads:   'TH',
 };
 
-let currentWeekStart = getWeekStart(new Date(2026, 2, 15));
+let currentWeekStart = getWeekStart(new Date(2026, 2, 16));
 let selectedPostId = null;
 let activePlatformFilter = 'all';
 
@@ -85,7 +85,7 @@ function renderWeek(direction) {
 
   const build = () => {
     grid.innerHTML = '';
-    const today = new Date(2026, 2, 15);
+    const today = new Date(2026, 2, 16);
 
     for (let i = 0; i < 7; i++) {
       const dayDate = new Date(currentWeekStart);
@@ -161,7 +161,7 @@ function nextWeek() {
 }
 
 function goToday() {
-  currentWeekStart = getWeekStart(new Date(2026, 2, 15));
+  currentWeekStart = getWeekStart(new Date(2026, 2, 16));
   renderWeek(null);
 }
 

@@ -390,10 +390,10 @@ Der DSGVO-Vorteil ist real: Daten verlassen niemals die eigene Infrastruktur. Ke
 Wann es sich rechnet: Bei mehr als 5 Millionen Tokens pro Monat beginnt On-Premise preislich konkurrenzfähig zu werden gegenüber Cloud-APIs. Darunter überwiegt der Betriebsaufwand.
 
 #OnPremLLM #Ollama #vLLM #DSGVO #KIArchitektur`
-    }
-  ],
-
-Die meisten Teams starten mit dem Offensichtlichen. PDF rein, chunken, vektorisieren, fertig. Das funktioniert für Demos gut. In der Produktion fängt dann das eigentliche Problem an.
+    },
+    {
+      type: 'rag_chunking',
+      text: `Die meisten Teams starten mit dem Offensichtlichen. PDF rein, chunken, vektorisieren, fertig. Das funktioniert für Demos gut. In der Produktion fängt dann das eigentliche Problem an.
 
 Was wir konkret sehen: Naive Chunking-Strategien (feste 512-Token-Blöcke) reißen Sinnzusammenhänge auseinander. Ein Wartungshandbuch mit 200 Seiten hat Abschnitte die aufeinander aufbauen. Wenn Chunk 47 auf Abschnitt 12 verweist, findet ein reiner Vektor-Retrieval das nicht zuverlässig.
 
@@ -955,7 +955,7 @@ const IMAGE_RATES = {
 };
 
 function getStatus(date) {
-  const today = new Date(2026, 2, 15); // March 15 2026
+  const today = new Date(2026, 2, 16); // March 16 2026
   const d = new Date(date);
   d.setHours(0,0,0,0);
   today.setHours(0,0,0,0);
